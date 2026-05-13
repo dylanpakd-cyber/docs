@@ -28,6 +28,15 @@
         ]
       },
       {
+        "group": "How-to guides",
+        "pages": [
+          "signalroom/how-to/content-folders",
+          "signalroom/how-to/posting-runs",
+          "signalroom/how-to/captions",
+          "signalroom/how-to/activity-workflows"
+        ]
+      },
+      {
         "group": "Operator guide",
         "root": "signalroom/operator-guide/index",
         "pages": [

@@ -1,50 +1,373 @@
 ---
 title: Agent docs
-description: How AI agents should safely work with the Warmr repo and SignalRoom docs.
+description: How AI agents should read state, run actions, and capture evidence in Warmr — at the level of detail an agent needs to act without supervision.
 ---
 
 # Agent docs
 
-Status: Current repo rules plus in-progress curated page for Mintlify.
+Status: Current. Source of truth for surface behavior remains the Warmr repo files referenced below, but this page is the practical entry point for agents driving Warmr through `warmrctl`.
 
-This page is a curated entry point for AI agents. The source of truth remains the repo files listed below.
+The goal of this page is the one missing from generic "agent rules" docs: **enough concrete context to actually do something useful in the app on the first try**. An agent that finishes this page should be able to inspect a host, identify a safe action, run it, capture the receipt, and report back without re-reading repo internals.
 
 ## Read first
 
-Current:
+Repo source order — read in this order before changing anything:
 
-1. `STATUS.md`
-2. `CLAUDE.md`
-3. `AGENTS.md`
-4. `CONTEXT.md`
-5. `docs/agents/domain.md`
-6. `docs/agents/worktree-freshness.md`
-7. `docs/agents/code-generation-best-practices.md`
+1. `STATUS.md` — what is shipped right now.
+2. `CLAUDE.md` — Claude-specific protocol + worktree rules.
+3. `AGENTS.md` — Codex-specific protocol + repo rules.
+4. `CONTEXT.md` — domain language.
+5. `docs/agents/` — repo-native agent rules (more detailed than this page).
 
-## Non-negotiable repo behavior
+This page condenses repo behavior into one entry point. **The repo files override anything here on conflict.**
 
-Current:
+## Universal principles
 
-- Do not work in a dirty canonical checkout.
-- Create a fresh worktree from `origin/main` for new implementation, docs, handoff, or issue-scoped work.
-- Run the repo freshness script before issue-scoped work.
-- Stop on stale, diverged, or protected-dirty freshness results.
-- Do not add paid hosted CI triggers without explicit approval.
-- Do not change release, tag, package, or product claims outside the requested scope.
+Four rules cover 90% of safe agent work in Warmr. The rest of this page is concrete application of these.
 
-## Safe control-plane behavior
+### 1. Read before you write
 
-Current:
+Every session starts with `warmrctl status`. Devices, threads, and app state can have changed since the last instruction; assume nothing.
 
-- Start with read-only commands.
-- Use JSON output for agent parsing.
-- Treat action commands as operator-approved actions.
-- Capture status, logs, and diffs before reporting completion.
+**Weak:**
+```bash
+warmrctl thread start --configuration-id 9f3a-...
+```
 
-## SignalRoom language boundary
+**Strong:**
+```bash
+warmrctl --json status
+warmrctl --json devices list
+warmrctl --json thread list
+# Now you know which lane is free, which thread is already running, and whether
+# the configuration you're about to start would collide.
+warmrctl thread start --configuration-id 9f3a-...
+```
 
-Current:
+**Why it matters:** the control plane has no global lock. An agent that starts a thread on a device that's already running another thread will produce a duplicate run rejection (best case) or a wedged lane (worst case).
 
-- SignalRoom is the public-facing name and landing layer.
-- Warmr is the repo, app, and control-plane implementation.
-- Public docs must not imply the product is trial-ready unless the repo and operator confirm it.
+### 2. `--json` for any output you'll parse
+
+Human table output is for operators. Agents parse JSON-RPC frames.
+
+**Weak:** scraping `warmrctl status`'s aligned columns with `awk`.
+
+**Strong:** `warmrctl --json status | jq '.devices[] | select(.isConnected)'`.
+
+Schema is stable at `1.0`. New optional fields are compatible within v1.x — your parser should ignore unknown keys, not crash.
+
+### 3. Action commands require operator intent
+
+Treat `thread.start`, `thread.stop`, `evidence.export`, and the `app.*` lifecycle methods as **operator-approved actions**, never agent-initiated probes. Read-only methods (`status`, `devices.list`, `templates.list`, `thread.list`, `logs.subscribe`) are always safe.
+
+If an action method returns `automation disabled` (a domain error), don't try to enable it — surface the error to the operator and stop. Automation gating is intentional.
+
+### 4. Capture state before reporting "done"
+
+Three artifacts make an action reviewable:
+
+1. **Pre-action state** — the `status` / `devices.list` / `thread.list` JSON you read in step 1.
+2. **The action's response frame** — including the JSON-RPC `id` you sent.
+3. **Post-action state** — another `status` after the action, or a few seconds of `logs --follow`.
+
+Without all three, "the run started" is hearsay. Don't claim completion without receipts.
+
+## Command surface
+
+`warmrctl` is the only supported front end. Every subcommand maps to one JSON-RPC method on Warmr's local Unix Domain Socket.
+
+| Subcommand | RPC method | Read or action |
+| --- | --- | --- |
+| `warmrctl status` | `status` | Read |
+| `warmrctl devices list` | `devices.list` | Read |
+| `warmrctl templates list` | `templates.list` | Read |
+| `warmrctl thread list` | `thread.list` | Read |
+| `warmrctl logs [--follow]` | `logs.subscribe` (+ `logs.unsubscribe`) | Read (streaming) |
+| `warmrctl thread start --configuration-id <ID>` | `thread.start` | **Action** |
+| `warmrctl thread stop --configuration-id <ID>` | `thread.stop` | **Action** |
+| `warmrctl evidence export` | `evidence.export` | **Action** (writes to disk) |
+| `warmrctl app start \| stop \| restart` | `app.start` / `app.stop` / `app.restart` | **Action** |
+| `warmrctl install \| upgrade \| uninstall` | (install helpers) | **Action** (modifies host) |
+
+Default control socket: `~/Library/Application Support/Warmr/control/control.sock`. Override only if the operator tells you to, via `--socket-path` or `WARMR_CONTROL_SOCKET`.
+
+### Global flags worth knowing
+
+| Flag | When to use |
+| --- | --- |
+| `--json` | Any output your code will parse. Always set in scripts. |
+| `--no-launch` | You want to query app state without auto-starting Warmr.app. Use when the operator hasn't authorized launching the app. |
+| `--socket-path <PATH>` | Operator gave you a non-default socket (rare). |
+| `--app-path <PATH>` | The Warmr.app binary lives somewhere non-standard (rare). |
+
+## Surface-by-surface guide
+
+### `warmrctl status`
+
+**When to use:** every session, first. Answers "is Warmr running, what devices does it see, what threads are active right now."
+
+**Returns** (`--json`, schema `1.0`):
+
+- `app` — app info (version, build, automation enabled or not).
+- `devices` — array of device summaries (UDID, displayName, modelName, iosVersion, isConnected, assignedPort, rodmanInstalledVersion).
+- `threads` — array of active thread summaries.
+
+**Common parse pattern:**
+
+```bash
+warmrctl --json status | jq '
+  {
+    automation_enabled: .app.automationEnabled,
+    connected_devices: [.devices[] | select(.isConnected) | .displayName],
+    active_threads:   [.threads[]  | {config: .configurationName, account: .accountUsername, status}]
+  }
+'
+```
+
+**Anti-pattern:** assuming `status` returns lane *readiness*. It tells you `isConnected` — not whether Developer Mode is on, the runner is trusted, or TikTok is logged in. Those are operator-side checks.
+
+### `warmrctl devices list`
+
+**When to use:** before any thread action, after `status` confirms devices are visible.
+
+**Returns:** the same `devices` array `status` includes, but as the only payload — useful when you want device state without app/thread context.
+
+**Device fields:**
+
+| Field | Meaning |
+| --- | --- |
+| `udid` | Stable iPhone identifier. Use this in logs and receipts. |
+| `displayName` | What the operator named it ("Lane 2 — iPhone 13"). For humans. |
+| `modelName` | "iPhone 13", "iPhone 14 Pro", etc. |
+| `iosVersion` | iOS version string. |
+| `isConnected` | Whether the device is visible over USB *right now*. |
+| `assignedPort` | Local port for the device's lane, if assigned. |
+| `rodmanInstalledVersion` | Version of the test runner on the device, if known. |
+
+**Anti-pattern:** filtering by `displayName` to pick a device. Names change; UDIDs don't. Always key on UDID.
+
+### `warmrctl templates list`
+
+**When to use:** before starting a thread, to confirm the template you intend to invoke still exists and looks the way the operator described it.
+
+**Returns:** template summaries — at minimum `id`, `name`, `mode` (warmup / upload / etc.), and the fields the template hard-codes.
+
+**Anti-pattern:** assuming templates are immutable. Operators edit them in Warmr.app while agents are running. Read template state immediately before starting a thread, not at the top of a long script.
+
+### `warmrctl thread list`
+
+**When to use:** before `thread start` (to confirm nothing conflicting is running), and as a poll surface to track a started thread's progress.
+
+**Per-thread fields you'll actually use:**
+
+| Field | Use for |
+| --- | --- |
+| `id` | Stable thread identifier; quote it in logs. |
+| `configurationId` | Which thread *configuration* this run belongs to. |
+| `accountUsername` | Which TikTok account this thread is currently on. |
+| `deviceUDID` | Which device is executing. |
+| `status` | Lifecycle (queued / running / finished / failed — exact set is in the repo). |
+| `startedAt`, `finishedAt`, `elapsedSeconds` | Timing. |
+| `videosWatched`, `likesGiven`, `favoritesGiven` | Activity counters (for warmup threads). |
+| `errorMessage` | If the thread failed, why. |
+
+**Anti-pattern:** polling `thread list` at 10 Hz. Use `logs --follow` for high-frequency observation; poll `thread list` every 5–15 seconds at most.
+
+### `warmrctl logs [--follow] [--configuration-id <ID>] [--account-username <USER>]`
+
+**When to use:** when you need to see what a running thread is actually doing right now.
+
+Without `--follow`, the CLI subscribes, prints the subscription confirmation, and unsubscribes — useful only to confirm the channel works. With `--follow`, it streams `log.line` notifications until you Ctrl-C.
+
+**Notification payload:**
+
+```json
+{
+  "method": "log.line",
+  "params": {
+    "subscriptionId": "...",
+    "timestamp": "2026-05-13T15:42:32Z",
+    "configurationName": "Lane 2 morning",
+    "accountUsername": "@example",
+    "severity": "INFO",
+    "message": "..."
+  }
+}
+```
+
+**Filtering:** pass `--configuration-id` and/or `--account-username` to narrow the stream. The server filters server-side, so this is cheap.
+
+**Anti-pattern:** subscribing without filtering on a host running 10 lanes. You'll bury yourself in unrelated log lines.
+
+### `warmrctl evidence export`
+
+**When to use:** at the end of a run, when the operator needs an auditable bundle of what happened.
+
+Writes a minimal evidence bundle to disk (path is reported in the response). Treat it like a `git tag` — once exported, the bundle is immutable from the agent's perspective. Don't re-run `evidence export` to "refresh" it; export once per run.
+
+**Receipt direction:** evidence bundles are operational receipts (what the app did), not platform outcome guarantees. Don't claim a TikTok publication "succeeded" because the evidence exported cleanly — only that the in-app flow finished without an error from Warmr's perspective.
+
+### `warmrctl app start | stop | restart`
+
+**When to use:** rarely, and only with operator intent. Restarting the app interrupts every active thread on the host — it is destructive to in-flight work.
+
+If `warmrctl status` returns "app not running" and you have permission to launch it, prefer `warmrctl --no-launch status` to first confirm that's actually the state. The default `status` invocation auto-launches.
+
+## Common workflows
+
+### Pre-flight inspection
+
+Use before any action, in any session.
+
+```bash
+warmrctl --json status > /tmp/pre.status.json
+warmrctl --json devices list > /tmp/pre.devices.json
+warmrctl --json thread list > /tmp/pre.threads.json
+```
+
+Stop here and report state if any of:
+
+- `app.automationEnabled` is `false` and the operator asked you to start a thread.
+- A thread is already `running` on the device the operator wants to use.
+- The target device's `isConnected` is `false`.
+- `rodmanInstalledVersion` is missing on a device the operator asked you to use.
+
+### Starting a posting run (operator-approved)
+
+Prerequisites: pre-flight inspection above is clean; operator named a specific `configurationId`.
+
+```bash
+# 1. Confirm the configuration exists and points at the device you expect.
+warmrctl --json templates list \
+  | jq --arg cfg "<CONFIGURATION_ID>" '.[] | select(.id == $cfg)'
+
+# 2. Start.
+warmrctl --json thread start --configuration-id <CONFIGURATION_ID> \
+  > /tmp/start.response.json
+
+# 3. Verify a thread is now running for that config.
+warmrctl --json thread list \
+  | jq --arg cfg "<CONFIGURATION_ID>" '
+      .[] | select(.configurationId == $cfg and .status == "running")
+    '
+
+# 4. Tail logs filtered to this run for the first 30 seconds.
+timeout 30 warmrctl --json logs --follow --configuration-id <CONFIGURATION_ID>
+```
+
+If step 3 returns nothing, **the thread didn't actually start** — check `start.response.json` for the domain error and surface it.
+
+### Monitoring a run
+
+Don't busy-loop on `thread list`. Combine a single subscription with periodic state snapshots:
+
+```bash
+# In one terminal — continuous stream.
+warmrctl --json logs --follow --configuration-id <CONFIGURATION_ID>
+
+# Every 30 seconds — durable state.
+while sleep 30; do
+  warmrctl --json thread list \
+    | jq --arg cfg "<CONFIGURATION_ID>" '
+        .[] | select(.configurationId == $cfg)
+        | {status, account: .accountUsername, elapsed: .elapsedSeconds, error: .errorMessage}
+      '
+done
+```
+
+### Stopping a run
+
+```bash
+# 1. Capture the in-progress state first.
+warmrctl --json thread list > /tmp/pre-stop.threads.json
+
+# 2. Stop.
+warmrctl --json thread stop --configuration-id <CONFIGURATION_ID>
+
+# 3. Confirm the thread is no longer running.
+warmrctl --json thread list \
+  | jq --arg cfg "<CONFIGURATION_ID>" '
+      .[] | select(.configurationId == $cfg and .status == "running")
+    '
+# (Should return nothing.)
+
+# 4. Export evidence.
+warmrctl --json evidence export
+```
+
+`thread.stop` is graceful — the device finishes whatever single in-app step it's mid-way through, then halts. Don't `app stop` to "force" a stop; you'll wedge other lanes on the same host.
+
+### Failure recovery
+
+When a thread reports `errorMessage`:
+
+1. **Capture, don't act.** Save `thread list` JSON before doing anything.
+2. **Subscribe to logs** for that thread (filtered) for ~60 seconds to see surrounding context.
+3. **Match the error to a known class:**
+   - `duplicate run rejected` — another thread is on this configuration; check `thread list`.
+   - `device not found` — operator disconnected the iPhone; check `devices list`.
+   - `template not found` — operator deleted the template mid-run.
+   - `automation disabled` — operator turned automation off in-app.
+   - `orchestrator unavailable` — Warmr's internal coordinator is down; safe action is to report, not restart.
+   - `port allocation exhausted` — too many lanes assigned ports; surface to operator.
+4. **Export evidence** before any cleanup — the failure state is itself the receipt.
+
+Never call `app restart` to "clear" an error you don't understand. It interrupts every other lane on the host.
+
+## Anti-patterns
+
+| Don't | Do | Why |
+| --- | --- | --- |
+| Start a thread without reading `thread list` first | Pre-flight: `status` → `devices list` → `thread list` | `thread start` does not check for human-visible conflicts; you have to. |
+| Filter devices by `displayName` | Filter by `udid` | Display names change; UDIDs don't. |
+| Subscribe to `logs --follow` with no filter on a multi-lane host | Filter by `--configuration-id` or `--account-username` | Floods the stream; you'll miss the signal you cared about. |
+| Re-run `evidence export` to "refresh" a bundle | Export once per run | Each export writes a separate bundle; older bundles aren't superseded automatically. |
+| Call `app restart` to recover from an error | Capture, log, report | `app restart` interrupts every thread on the host, including ones unrelated to the failure. |
+| Treat a clean `evidence export` as proof TikTok published the video | Treat it as proof Warmr's in-app flow finished | Evidence bundles are operational receipts, not platform outcomes. |
+| Hard-code the socket path in scripts | Read `WARMR_CONTROL_SOCKET` or accept `--socket-path` from operator config | Operators can run multiple Warmr instances with different sockets. |
+| Parse the human table output of `warmrctl status` | Always pass `--json` for parsable output | Table layout is not a stable contract; JSON schema `1.0` is. |
+
+## Quick reference card
+
+```
+# Always start here.
+warmrctl --json status
+
+# Inspect.
+warmrctl --json devices list
+warmrctl --json templates list
+warmrctl --json thread list
+
+# Watch (filtered).
+warmrctl --json logs --follow --configuration-id <CONFIGURATION_ID>
+
+# Act (operator-approved only).
+warmrctl --json thread start --configuration-id <CONFIGURATION_ID>
+warmrctl --json thread stop  --configuration-id <CONFIGURATION_ID>
+warmrctl --json evidence export
+
+# Override defaults if operator specified them.
+warmrctl --socket-path <PATH> --json status
+```
+
+## Forbidden actions for agents
+
+Even with operator approval, **never** do the following from this docs surface — they belong in the Warmr repo, not in `warmrctl` invocations:
+
+- Modify Warmr.app source code, certificates, provisioning profiles, or signing identity.
+- Touch the canonical Warmr checkout if it's marked protected-dirty by the freshness script.
+- Enable automation that the operator has explicitly disabled.
+- Issue platform claims in operator-facing output ("ban-safe", "guaranteed reach", "account immunity") — see [Claims guardrails](/product/claims-guardrails).
+
+Full list with rationale: [Forbidden agent actions](/agents/forbidden-actions).
+
+## Related docs
+
+- [warmrctl reference](/signalroom/reference/warmrctl) — command surface listing.
+- [Control-plane reference](/reference/control-plane) — JSON-RPC methods and error codes.
+- [Run state model](/reference/run-state-model) — thread fields and lifecycle.
+- [Device state model](/reference/device-state-model) — device fields, lane concepts.
+- [Log events](/reference/log-events) — `log.line` notification schema.
+- [Agent overview](/agents/overview) — repo-native rules (read-first order).
+- [Worktree protocol](/agents/worktree-protocol) — fresh-worktree workflow for agents editing the Warmr repo.
+- [Safe agent actions](/agents/safe-agent-actions) / [Forbidden actions](/agents/forbidden-actions) — repo + control-plane action policy.
