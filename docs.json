@@ -48,7 +48,7 @@
         ]
       },
       {
-        "group": "Agent docs",
+        "group": "Repo rules for agents",
         "root": "agents/overview",
         "pages": [
           "agents/repo-rules",
