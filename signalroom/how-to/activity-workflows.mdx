@@ -1,0 +1,235 @@
+---
+title: Activity workflows
+description: How to configure and run activity workflows (warmup) — Feed or Search type, interaction rates, recommended presets, common errors.
+---
+
+# Activity workflows
+
+Status: Current operator how-to. Run Mode = Warmup in templates. See [Posting runs](/signalroom/how-to/posting-runs) for the publishing mode.
+
+An activity workflow is a mode where the account doesn't publish anything — it spends time in TikTok the way a regular user would: scrolls the feed, watches for randomized durations, occasionally likes / follows / saves, and searches for videos by keywords.
+
+**It does not upload or publish anything.** Activity workflows exist to build up engagement on an account before its first publication and to nudge TikTok's algorithm toward a niche.
+
+## When to use one
+
+| Scenario | Activity workflow needed? |
+| --- | --- |
+| Freshly logged-in account before its first post | **Yes**, 1–2 cycles |
+| Account after a long pause (a week+) | **Yes**, 1 cycle |
+| Account that's been actively publishing recently | Optional |
+| You want to teach the feed your niche | Yes — keyword (Search) workflow |
+
+An activity workflow can run as a **standalone thread** before the posting run, or be chained inside an onboarding run (after login) via the `seeding_warm_*` settings.
+
+## Two workflow types
+
+The template has a **Feed** / **Search** toggle. One thread run uses **one of the two** — the choice is locked into the template.
+
+### Feed — the For You feed
+
+The runner opens TikTok and scrolls the feed:
+
+1. Watches the current video for a random duration.
+2. With probability X% likes the video.
+3. With probability Y% follows the author.
+4. With probability Z% saves to favorites.
+5. Swipes up to the next video.
+6. Repeats N times.
+
+### Search — keyword-driven
+
+The runner opens TikTok and runs a search:
+
+1. Opens the search screen.
+2. Types **one random** keyword from the list (picked per run).
+3. Switches to the "Videos" tab.
+4. Opens the first video in the results.
+5. Watches videos in fullscreen for a random duration.
+6. With probability X / Y / Z% likes / follows / saves.
+7. Swipes to the next video, N times.
+
+Search is more valuable when you want to nudge the feed toward a specific niche (cooking, fitness, a particular brand). TikTok's algorithm picks up the implied interests.
+
+## Template setup
+
+In Warmr.app: **Templates → New template → Run Mode = Warmup**.
+
+### "Activity Settings" card
+
+#### Feed / Search toggle
+
+Pick one. Parameters of the other type are saved in the template but not used.
+
+#### Feed parameters
+
+| Parameter | What it controls | Default | Limits |
+| --- | --- | --- | --- |
+| **Videos in feed** (min / max) | How many videos to scroll (random within range) | 5 – 15 | 0 – 100 |
+| **Time per video** (min / max, sec) | Seconds per video | 2 – 10 | 3 – 20 |
+
+#### Search parameters
+
+| Parameter | What it controls | Default | Limits |
+| --- | --- | --- | --- |
+| **Keywords** | One keyword per line | empty | — |
+| **Videos in results** (min / max) | How many videos to watch in results | 3 – 8 | 0 – 100 |
+| **Time per video** (min / max, sec) | Seconds per video | 5 – 16 | 3 – 20 |
+
+> **Keyword format:** one keyword per line. **One keyword is picked at random per thread run** — so write similar / niche keywords rather than 50 random topics.
+>
+> ```
+> easy pasta recipe
+> 5 minute meal
+> homemade ramen
+> chef secrets
+> ```
+
+### "Feed Rates" / "Search Rates" cards
+
+Interaction probabilities are **independent coin flips on each video**:
+
+| Parameter | What it controls | Default |
+| --- | --- | --- |
+| **Like** | Chance of liking each video (0 – 100%) | 10% |
+| **Follow** | Chance of following the author (0 – 100%) | 0% |
+| **Favorite** | Chance of saving to favorites (0 – 100%) | 0% |
+
+> **Heads up:** these are independent chances **per video**, not "one like per session." Like = 50% over 10 videos averages 5 likes. Pushing above 15–25% Like, or above 5% Follow / Favorite, produces interaction patterns that look very different from a typical user.
+
+### "Pause Between Accounts" card
+
+Pause between accounts when working a multi-account list:
+
+| Value | When to pick |
+| --- | --- |
+| 5 sec | Test run |
+| 10 sec | Normal mode, 2–3 accounts per device |
+| 30 sec | Larger account list, cautious pace |
+| 60 sec | Maximum manual-switch imitation |
+
+### "Debug" card
+
+- **Save screenshots** — screenshots at each step for diagnostics. On by default. Turn off only when activity workflows are running cleanly and you don't need the support trail.
+
+## Fields not used in activity workflows
+
+Template fields inherited from posting-run mode are ignored in activity workflows. You can leave them alone:
+
+- Video / photo folder.
+- Content type.
+- Descriptions and everything related.
+- Music.
+- Move/Delete used.
+- Publications per account, Wait after publish.
+
+## Thread configuration
+
+Beyond the template, the **Threads → New configuration** tab takes:
+
+| Field | What to pick |
+| --- | --- |
+| **Configuration name** | e.g. "Warmup Phone 2" |
+| **Devices** | One or more lanes |
+| **Upload template** | The template with Run Mode = Warmup |
+| **Account List** | List of accounts (login must already be done) |
+| **Proxy** | Optional — Stash / Happ / System / Manual |
+| **Cyclic** | Endless cycle through accounts |
+| **Pause between accounts / cycles** | Your call |
+| **Schedule** | Optional |
+
+> **Accounts must already be logged into TikTok on the device** (or in Keychain). Activity workflows do **not log in** on their own — for cold-start login use an onboarding run.
+
+## What happens during a session
+
+```
+1. The thread opens TikTok on the device
+2. If Feed is selected:
+   - Loop over N videos:
+     - Watch X seconds
+     - With configured chances: like / follow / save
+     - Swipe to the next video
+3. If Search is selected:
+   - Open the search screen
+   - Type one random keyword
+   - Switch to the "Videos" tab
+   - Open the first video
+   - Loop over N videos (same interaction rules as Feed)
+4. Return to the TikTok home screen
+5. If multiple accounts → pause → next account
+```
+
+If **Cyclic** is on, after walking through every account the thread sleeps for "Pause between cycles" minutes and starts over.
+
+## Common errors
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| Thread crashes immediately: "No keywords for warmup search" | Search mode with no keywords | Fill in Keywords or switch to Feed |
+| Same keyword reused | By design — one keyword is picked per run | Restart the thread to rotate, or enable Cyclic |
+| No likes at all | Like chance is 0%, or the current item is a livestream (sidebar hidden) | Set Like ≥ 5–10%; check the feed has regular videos |
+| Videos fly by too quickly | Min time per video too small | Push min to 3–5 seconds |
+| Thread freezes for 30+ seconds between videos | Hit a livestream — the runner waits, then swipes onward | Standard behavior; nothing to do |
+| Account reach drops after a series of activity workflows | Too aggressive settings (Like / Follow > 30%) | Lower interaction chances |
+
+## Recommended presets
+
+### "Safe activity for a new account"
+
+```
+Type: Feed
+Videos: 8 – 15
+Time: 4 – 12 sec
+Like: 8%
+Follow: 1%
+Favorite: 1%
+```
+
+Mimics a first-time TikTok session: lazy scroll, occasional likes.
+
+### "Niche feed shaping"
+
+```
+Type: Search
+Keywords:
+  fitness motivation
+  gym tips
+  home workout
+  beginner workout
+Videos in search: 5 – 10
+Time: 6 – 15 sec
+Like: 15%
+Follow: 3%
+```
+
+The algorithm picks up the implied niche — the next time the account opens For You, the feed is on-topic.
+
+### "Active user"
+
+```
+Type: Feed
+Videos: 15 – 25
+Time: 3 – 9 sec
+Like: 18%
+Follow: 5%
+Favorite: 2%
+```
+
+Mimics someone who watches a lot and likes noticeably.
+
+## "Activity workflow configured correctly" checklist
+
+- Template created with Run Mode = **Warmup**.
+- Type picked: **Feed** or **Search**.
+- If Search — Keywords filled in (one per line).
+- Video count and watch time within a realistic range (not 100 videos at 30 seconds each).
+- Interaction chances ≤ 25% (Like) and ≤ 5% (Follow / Favorite).
+- Pause between accounts ≥ 10 sec for multi-account lists.
+- Accounts in the Account List are already logged into TikTok on the device.
+- (Optional) proxy attached.
+
+## Related
+
+- [Posting runs](/signalroom/how-to/posting-runs) — the publishing mode often launched right after an activity workflow.
+- [Content folder structure](/signalroom/how-to/content-folders) — activity workflows don't need media folders, but useful for contrast.
+- [Agent docs](/signalroom/agent-docs) — driving activity workflows from `warmrctl`.

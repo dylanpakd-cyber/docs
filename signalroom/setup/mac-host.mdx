@@ -1,45 +1,84 @@
 ---
 title: Mac host setup
-description: What the Warmr host Mac is responsible for.
+description: What the Warmr host Mac is responsible for, sizing it for your iPhone count, and the one-time setup that has to happen before the app runs.
 ---
 
 # Mac host setup
 
-Status: Current architecture notes plus planned operator checklist.
+Status: Current setup reference. The repo source of truth for helper binaries and socket paths remains the Warmr repo.
 
-Warmr runs on a Mac host. SignalRoom should be described publicly as software that runs on the customer-owned setup, not as a hosted device service.
+The Mac host runs Warmr.app, owns the control socket, drives connected iPhones over USB, and hosts the bundled go-ios + port-forwarding helpers. SignalRoom is software you run on **your own** Mac — there is no hosted SignalRoom fleet you connect to.
 
-## Current responsibilities
+## 1. Host machine requirements
+
+### Mac (recommended)
+
+Apple Silicon is required — Intel Macs are not supported. On-screen content recognition runs on the Neural Engine on Apple Silicon, which is the entire reason this stack runs comfortably with many iPhones on one host.
+
+- **CPU:** Apple Silicon (M1 / M2 / M3 / M4 family). Pro / Max variants help for larger fleets.
+- **macOS:** 14 (Sonoma) or later.
+- **Disk:** SSD; on a fleet of 5+ iPhones, prefer NVMe.
+
+### Sizing by iPhone count
+
+Use this as a starting point. Capacity assumes TikTok's native multi-account limit (up to 8 accounts per device).
+
+| iPhones | Up to accounts | Mac suggestion | RAM | Disk |
+| --- | --- | --- | --- | --- |
+| 1 | 8 | M1 / M2 / M4 | 16 GB | SATA SSD |
+| 3 | 24 | M1 / M2 / M4 | 16 GB | SATA SSD |
+| 5 | 40 | M2 / M4 (Pro preferred) | 24 GB | NVMe SSD |
+| 10 | 80 | M2 Pro / M4 Pro | 32 GB | NVMe SSD |
+| > 10 | — | Contact us before sizing | — | — |
+
+For deployments above 10 devices, write to support before buying hardware — at that scale, network, hub topology, and USB port count matter more than raw CPU.
+
+## 2. Mac responsibilities
 
 Current:
 
-- Run Warmr.app.
-- Connect physical iPhones over USB.
-- Provide the local control socket used by `warmrctl`.
-- Host go-ios and port-forwarding helpers bundled with the app.
-- Keep one owner for each connected device lane.
+- Run **Warmr.app**.
+- Own the control socket at `~/Library/Application Support/Warmr/control/control.sock`.
+- Discover and drive connected iPhones via the bundled go-ios helpers.
+- Keep **one owner per device lane** — running two Warmr instances against the same iPhone produces wedged lanes.
+- Surface state to `warmrctl` for operator + agent inspection.
 
-The default control socket path used by `warmrctl` is:
+Agents may override the socket path with `WARMR_CONTROL_SOCKET` or `--socket-path` when the operator explicitly provides one.
 
-```text
-~/Library/Application Support/Warmr/control/control.sock
+## 3. One-time Mac setup
+
+Run through these once per Mac, before connecting your first iPhone.
+
+1. **Disable App Nap for Warmr.app.** Long sessions get throttled otherwise. System Settings → General → Login Items → Allow in Background (set Warmr to always allow).
+2. **Grant Full Disk Access** if Warmr asks. System Settings → Privacy & Security → Full Disk Access → add Warmr.app.
+3. **Disable display sleep.** System Settings → Lock Screen → "Turn display off when inactive" = Never (or 1 hour for long sessions). The display does not need to be on, but waking it shouldn't interrupt the session.
+4. **Keep the Mac plugged into power** during sessions. Laptops on battery will throttle Neural Engine workloads.
+
+## 4. Pre-flight check from the operator
+
+Before running anything that touches iPhones, confirm:
+
+```bash
+warmrctl --json status
+# .app.automationEnabled == true if you intend to start a thread
+# .devices is the array of iPhones Warmr currently sees
+
+warmrctl --json devices list
+# Each connected iPhone shows isConnected: true and a UDID
 ```
 
-Agents may override it with `WARMR_CONTROL_SOCKET` or `--socket-path` when working against a non-default runtime.
+If `status` returns app-not-running and you have permission to launch Warmr.app, the default `warmrctl status` invocation will auto-launch it. To inspect without launching, pass `--no-launch`.
 
-## Operator checks
+## What this page does not cover
 
-Current:
+- iPhone-side setup → [iPhone lanes](/signalroom/setup/iphone-lanes).
+- iPhone settings (Developer Mode, Light appearance, StandBy off, etc.) → [Developer Mode](/signalroom/setup/developer-mode).
+- Installing the runner on the iPhone → [Trust and runner setup](/signalroom/setup/trust-runner).
+- Public claims framing → [Claims and safety](/signalroom/safety).
 
-- Confirm Warmr.app is running or allow `warmrctl` to launch it.
-- Confirm devices are visible with `warmrctl devices list`.
-- Confirm no other Warmr instance owns the same device lane.
-
-In progress:
-
-- A setup checklist for customers installing on their own Mac host.
-- Cleaner docs for helper binary locations and permission prompts.
+## Planned
 
 Planned:
 
-- Trial onboarding docs with guided checks for Mac host readiness, iPhone lanes, and control-plane smoke tests.
+- Trial-onboarding checklist for teams installing on their own Mac for the first time.
+- A `warmrctl install` walkthrough once that surface stabilizes.

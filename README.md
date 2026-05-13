@@ -1,55 +1,77 @@
-# Mintlify Starter Kit
+# SignalRoom docs
 
-Use the starter kit to get your docs deployed and ready to customize.
+Mintlify source for [SignalRoom](https://67labs.mintlify.app) — the public documentation surface for the Warmr app.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+## What SignalRoom is
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+SignalRoom is private software for TikTok operators. It is the control layer for teams running their own TikTok posting setup on customer-owned iPhones: device lanes, posting runs, account state, logs, cooldowns, and operator approvals in one private cockpit on a Mac.
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+- **SignalRoom** is the public-facing name and landing layer.
+- **Warmr** is the macOS app, repo, and control-plane implementation that actually drives the devices.
+- `warmrctl` is the CLI front end agents and operators use to read state and run actions.
 
-## AI-assisted writing
+SignalRoom is not a hosted phone service, an agency, a broad social platform, or a TikTok API integration. It is operator software for teams that want to buy and run it themselves on their own hardware.
 
-Set up your AI coding tool to work with Mintlify:
+This docs repo is a curated Mintlify mirror. The source of truth for code, runbooks, and internal agent rules remains the private Warmr repo.
+
+## What's in this repo
+
+```
+.
+├── docs.json                  # Mintlify navigation + theme
+├── index.mdx                  # Landing page
+├── quickstart.mdx             # Repo-operator quickstart (conservative)
+├── signalroom/                # Public SignalRoom pages
+│   ├── index.mdx              # Product overview
+│   ├── quickstart.mdx         # Operator quickstart
+│   ├── safety.mdx             # Claims + safety framing
+│   ├── agent-docs.mdx         # How agents should drive warmrctl
+│   ├── setup/                 # Mac host, iPhone lanes, dev mode, runner trust
+│   ├── operator-guide/        # Lane state, posting runs, cooldowns, approvals
+│   ├── how-to/                # Deep practical guides (one knob at a time)
+│   └── reference/warmrctl.mdx # CLI reference
+├── agents/                    # Repo rules for AI agents working on Warmr
+├── reference/                 # Control plane, run/device state models, log events
+├── product/                   # Positioning + claims guardrails
+└── mintlify/sync-plan.mdx     # How this repo mirrors the private docs tree
+```
+
+Everything else (`api-reference/`, `essentials/`, `snippets/`, `ai-tools/`, `agent-ready/`) is unmodified Mintlify starter content kept until SignalRoom pages cover the same ground.
+
+## Local development
 
 ```bash
-npx skills add https://mintlify.com/docs
-```
-
-This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
-
-See the [AI tools guides](/ai-tools) for tool-specific setup.
-
-## Development
-
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
-
-```
 npm i -g mint
-```
-
-Run the following command at the root of your documentation, where your `docs.json` is located:
-
-```
 mint dev
 ```
 
-View your local preview at `http://localhost:3000`.
+Preview runs at <http://localhost:3000>. The CLI watches files for changes.
 
-## Publishing changes
+If `mint dev` 404s, you're not in a folder with a valid `docs.json` — `cd` into the repo root.
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+## Publishing
 
-## Need help?
+Mintlify is wired to this repo's `main` branch via the GitHub App. **Every push to `main` triggers an automatic production deploy** to <https://67labs.mintlify.app>.
 
-### Troubleshooting
+For changes that need review before going live:
 
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
+1. Branch off `main` (`docs/<topic>-<date>`).
+2. Open a PR into `main`.
+3. After merge, Mintlify rebuilds within a minute or two.
 
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+To preview a feature branch on `*.mintlify.app` before merging, change the deploy branch in the Mintlify dashboard's Git Settings, then switch it back to `main` after.
+
+## Writing guardrails
+
+Public copy in this repo must stay inside SignalRoom's claims guardrails (see [`product/claims-guardrails.mdx`](product/claims-guardrails.mdx)):
+
+- Do not promise platform results or account immunity.
+- Do not describe hidden, evasive, or detection-avoidance behavior.
+- Use **Current**, **In progress**, **Planned** labels for everything that isn't shipped to operators yet.
+- Keep the SignalRoom (public name) ↔ Warmr (repo) relationship intact in copy.
+
+If a page would benefit from operator-only detail that doesn't belong in public docs, leave a stub here and put the full version in the private Warmr repo.
+
+## License
+
+See [`LICENSE`](LICENSE).

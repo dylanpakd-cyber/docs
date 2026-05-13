@@ -1,31 +1,102 @@
 ---
-title: Developer Mode
-description: Conservative notes for iPhone Developer Mode and trust prerequisites.
+title: iPhone settings
+description: The iOS settings that have to be configured on each iPhone before automation will run reliably — including the recent Light appearance + StandBy off rules.
 ---
 
-# Developer Mode
+# iPhone settings
 
-Status: In progress. This file records the setup boundary without pretending to be a complete public setup guide.
+Status: Current iPhone-side checklist. This page covers every iOS toggle that affects whether a lane runs cleanly; pages on the runner install and lane readiness pick up from here.
 
-Warmr depends on real iPhones being ready for local automation from the Mac host. Device trust and Developer Mode are prerequisites for a reliable iPhone lane.
+Run through this **once per iPhone, in order, before installing the on-device runner**. Two of these — Light appearance and StandBy off — are the most common cause of failed sessions in newly-set-up lanes.
 
-## Current boundary
+## 1. Developer Mode
 
-Current:
+**Settings → Privacy & Security → Developer Mode → On.**
 
-- Operators should complete trust prompts and Developer Mode setup before expecting a lane to run.
-- Agents should not assume a disconnected or untrusted phone can be fixed from repo code alone.
-- Setup state should be confirmed before starting a run.
+The iPhone will prompt to restart. Confirm. After reboot, confirm Developer Mode is enabled again at the second prompt.
 
-## Safe agent behavior
+Required for iOS 17+. Without Developer Mode, the on-device runner cannot be installed.
 
-Current:
+**If Developer Mode is missing from Privacy & Security:** the option only appears after the iPhone has been connected to a Mac running Xcode (or an Apple-signed equivalent) at least once. Connect to the Mac host, then re-check.
 
-- Read repo protocol before changing setup docs.
-- Prefer `warmrctl devices list` for observed device state.
-- Treat device setup prompts as operator-owned unless a repo runbook explicitly says otherwise.
+## 2. Trust the Mac
 
-Planned:
+Plug the iPhone into the Mac host. When iOS shows **"Trust This Computer?"**, tap **Trust** and enter the passcode.
 
-- Step-by-step customer onboarding docs for trust prompts, Developer Mode, and first device smoke tests.
-- Clear screenshots or support notes once the product flow is trial-ready.
+iOS remembers this trust permanently for the specific Mac. If you replace the Mac, you'll need to re-trust on each device.
+
+## 3. Auto-Lock = Never
+
+**Settings → Display & Brightness → Auto-Lock → Never.**
+
+If "Never" makes you uncomfortable, the minimum acceptable value is 5 minutes — anything shorter will interrupt longer in-app flows.
+
+**Why this matters:** auto-lock cuts off whatever the iPhone is doing — including an active upload. The session breaks, the video doesn't publish, and the account is left in an uncertain state.
+
+## 4. Brightness ≥ 50%
+
+**Settings → Display & Brightness** — slider at the middle or higher.
+
+**Why this matters:** Warmr recognizes TikTok screen elements visually. Low brightness reduces on-screen contrast and slows recognition, which slows the whole session.
+
+## 5. Appearance = Light (required)
+
+**Settings → Display & Brightness → Appearance → Light.**
+
+Required. On Dark appearance, TikTok's pre-publish screen renders almost entirely in near-black, and the on-device runner cannot reliably locate the on-screen targets it needs to tap — uploads simply do not complete.
+
+**If you prefer Dark elsewhere on your phone**, set it specifically to **Light** on the iPhones used with Warmr. Do **not** use "Automatic" — it switches at night and breaks scheduled sessions.
+
+## 6. Disable iCloud Photos
+
+**Settings → Photos → iCloud Photos → Off.**
+
+Keeps the iPhone's gallery limited to the content you prepared for publishing. Otherwise foreign photos from your iCloud library can sync down and accidentally end up in a post.
+
+## 7. StandBy = Off (required)
+
+**Settings → StandBy → Off.**
+
+Required. StandBy is the iOS 17+ feature that turns a charging iPhone into a desk clock when it's lying on its side. It activates after about 30 seconds when the device is *charging* + *horizontal* + *locked* + *idle*.
+
+**Once StandBy is active, iOS blocks programmatic app launches.** Warmr cannot start TikTok, and the session stalls. Symptoms: the session sits idle for several minutes, then the device shows up as `standby` (or simply stops progressing) in the dashboard.
+
+**Alternative (less reliable):** always keep the iPhone *vertical* while charging. StandBy needs the phone lying flat to activate, so a stand that holds it upright works. **Portrait Orientation Lock in Control Center does not help** — StandBy reads the accelerometer directly.
+
+Toggling StandBy off doesn't affect anything else on the phone.
+
+## 8. Reduce Motion (optional)
+
+**Settings → Accessibility → Motion → Reduce Motion → On.**
+
+Cuts iOS animations, which makes screen transitions slightly faster across the whole device. Not required, but recommended once the rest of the lane is working.
+
+## 9. TikTok app
+
+- **Install TikTok** from the App Store on the iPhone.
+- **Open it at least once**, accept the initial prompts, sign in to the first account you intend to use.
+- **Language:** English. Other languages may work but are not regularly tested.
+
+The runner will not install TikTok for you. If TikTok is missing from the device, posting runs will fail with a "TikTok not installed" error.
+
+## Per-iPhone checklist
+
+Before installing the on-device runner, confirm:
+
+- [ ] Developer Mode = On
+- [ ] "Trust This Computer" confirmed on the Mac you'll use
+- [ ] Auto-Lock = Never (or ≥ 5 minutes)
+- [ ] Brightness ≥ 50%
+- [ ] Appearance = **Light** (not Dark, not Automatic)
+- [ ] iCloud Photos = Off
+- [ ] **StandBy = Off**
+- [ ] TikTok installed, opened at least once, signed into the first account
+- [ ] At least 5 GB free (15 GB+ preferred)
+
+All boxes ticked? Continue to [Trust and runner setup](/signalroom/setup/trust-runner) to install the on-device runner.
+
+## Related
+
+- [iPhone lanes](/signalroom/setup/iphone-lanes) — supported models, USB cables, hubs.
+- [Trust and runner setup](/signalroom/setup/trust-runner) — installing the runner via App Store Connect API.
+- [Safe agent actions](/agents/safe-agent-actions) — agents must not silently change iPhone settings on the operator's behalf.
