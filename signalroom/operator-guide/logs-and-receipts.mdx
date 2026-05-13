@@ -1,0 +1,41 @@
+---
+title: Logs and receipts
+description: How Warmr exposes reviewable run evidence.
+---
+
+# Logs and receipts
+
+Status: Current for log subscription and minimal evidence export. In progress for richer operator receipts.
+
+Logs are central to the SignalRoom safety frame. Operators should be able to see what happened, when, on which configuration and account.
+
+## Current log surface
+
+Current:
+
+- `logs.subscribe` supports optional `configurationId` and `accountUsername` filters.
+- `warmrctl logs` subscribes and then unsubscribes unless `--follow` is used.
+- `warmrctl logs --follow` streams notifications.
+- Log notification fields include timestamp, configuration name, account username, severity, and message.
+
+Useful commands:
+
+```bash
+warmrctl logs --configuration-id <CONFIGURATION_UUID>
+warmrctl logs --configuration-id <CONFIGURATION_UUID> --follow
+warmrctl --json logs --account-username <USERNAME>
+```
+
+## Current evidence export
+
+Current:
+
+- `warmrctl evidence export` calls the control-plane evidence export method.
+- The current bundle is minimal and should be treated as logs plus job snapshots unless the repo proves richer evidence.
+
+## Planned receipts
+
+Planned:
+
+- Operator-facing receipts for run start, stop, lane state, and follow-up inspection.
+- Failure bundles that make support and debugging faster.

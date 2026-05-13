@@ -1,0 +1,41 @@
+---
+title: Posting runs
+description: How to describe posting runs without overclaiming current automation.
+---
+
+# Posting runs
+
+Status: In progress.
+
+The public SignalRoom language can use posting runs as the operator workflow name. The current Warmr control plane exposes thread configurations and thread jobs. Do not overstate unfinished posting-run product behavior.
+
+## Current repo-backed surface
+
+Current:
+
+- `warmrctl templates list` shows available warmup templates.
+- `warmrctl thread list` shows thread jobs.
+- `warmrctl thread start --configuration-id <CONFIGURATION_UUID>` starts a thread configuration when action prerequisites are met.
+- `warmrctl thread stop --configuration-id <CONFIGURATION_UUID>` stops a thread configuration.
+- `warmrctl logs --follow` streams log notifications.
+
+## Safe language
+
+Use:
+
+- run control
+- controlled runs
+- posting runs as an operator workflow label
+- repeatable workflows
+- logs and receipts
+- operator review
+
+Avoid implying the product can produce promised reach, hidden activity, or automatic platform outcomes.
+
+## Planned docs
+
+Planned:
+
+- A run checklist from readiness to approval to receipt.
+- A mapping from public posting-run language to exact control-plane objects.
+- Trial guidance for teams validating a run on their own setup.

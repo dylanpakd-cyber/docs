@@ -1,0 +1,30 @@
+---
+title: Agent overview
+description: Repo-native orientation for agents working on Warmr and SignalRoom docs.
+---
+
+# Agent overview
+
+Status: Current repo-native docs entry point.
+
+SignalRoom is the public-facing name and landing layer. Warmr is the app, repo, and control-plane implementation. Agents should preserve that relationship in code, docs, and product language.
+
+## Source order
+
+Current:
+
+1. `STATUS.md` for current state.
+2. `CLAUDE.md` for Claude and worktree protocol.
+3. `AGENTS.md` for Codex and repo rules.
+4. `CONTEXT.md` for domain language.
+5. Existing docs under `docs/agents`, `docs/plans`, `docs/prd`, `docs/release`, `docs/adr`, and `docs/handoffs`.
+
+## Work style
+
+Current:
+
+- Inspect before changing.
+- Prefer small docs and code changes with clear verification.
+- Do not assume unfinished features are current.
+- Use Current, In progress, and Planned labels in docs.
+- Keep Mintlify as a mirror of curated repo-native docs, not the source of truth.

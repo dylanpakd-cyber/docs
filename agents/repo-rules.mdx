@@ -1,0 +1,38 @@
+---
+title: Repo rules for agents
+description: Rules agents must follow before editing Warmr.
+---
+
+# Repo rules for agents
+
+Status: Current summary. The exact source of truth remains `STATUS.md`, `CLAUDE.md`, and `AGENTS.md`.
+
+## Required read order
+
+Current:
+
+1. Read `STATUS.md` first.
+2. Read `CLAUDE.md` second.
+3. Read `AGENTS.md` and `CONTEXT.md` before making changes.
+4. Inspect existing docs and code in the area you plan to touch.
+
+## Safety rules
+
+Current:
+
+- Do not reuse a dirty canonical checkout.
+- Do not skip freshness checks for issue-scoped work.
+- Do not edit protected or release-sensitive areas unless the task asks for it.
+- Do not add hosted CI triggers that can create spend.
+- Do not publish broad public marketing claims from repo docs.
+- Do not make app-code changes while doing docs-only work.
+
+## Reporting rules
+
+Current:
+
+- Report worktree path and branch.
+- Report files changed.
+- Report verification performed.
+- Report what was not changed.
+- Never include credentials or secret values.

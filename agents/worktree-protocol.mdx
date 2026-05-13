@@ -1,0 +1,39 @@
+---
+title: Worktree protocol
+description: Fresh worktree workflow for Warmr agents.
+---
+
+# Worktree protocol
+
+Status: Current summary.
+
+New implementation, documentation, handoff, and issue-scoped work should start from a fresh worktree based on `origin/main` unless the operator explicitly says to continue an existing worktree.
+
+## Current protocol
+
+Current:
+
+1. Fetch `origin/main`.
+2. Create a fresh worktree outside the dirty canonical checkout.
+3. Create a branch named for the task.
+4. Read repo protocol files in order.
+5. Inspect the existing docs or code area.
+6. Make the smallest useful change.
+7. Verify locally.
+8. Show status and diff stats.
+9. Do not commit, push, or open a PR unless the operator asks.
+
+## Freshness gates
+
+Current:
+
+- Use `scripts/linear-worktree-freshness.sh --all-worktrees` for coordination.
+- Use `scripts/linear-worktree-freshness.sh --issue DYL-XXX --strict` for Linear-backed work.
+- Stop if the script reports stale, diverged, or protected-dirty state for the target worktree.
+
+## Canonical checkout
+
+Current:
+
+- Treat the canonical checkout as operator-owned.
+- Do not clean it, reset it, stash it, or reuse it for new edits unless explicitly asked.

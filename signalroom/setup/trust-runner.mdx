@@ -1,0 +1,39 @@
+---
+title: Trust and runner setup
+description: Device trust, runner readiness, and safe control-plane assumptions.
+---
+
+# Trust and runner setup
+
+Status: Current architecture notes plus planned operator setup details.
+
+Warmr uses a vendored XCTest runner on physical iPhones. The runner exposes a bridge used by the app to observe and drive the device lane.
+
+## Current concepts
+
+Current:
+
+- The Mac host needs device trust before a phone can be used reliably.
+- Warmr uses helper binaries and port-forwarding to communicate with the phone lane.
+- The runner lane is separate per device.
+- `warmrctl devices list` can show device connection and runner version fields when available.
+
+## What to verify first
+
+Current:
+
+1. The phone is physically connected.
+2. The Mac is trusted by the phone.
+3. Warmr can see the device.
+4. The runner lane is not owned by another runtime.
+5. Read-only status and device checks pass before action commands.
+
+In progress:
+
+- More complete runner install and recovery docs.
+- Operator-facing checks for first-run prompts.
+
+Planned:
+
+- Guided onboarding for customer-owned iPhone lanes.
+- A recovery decision tree for trust, runner, and port-forwarding failures.

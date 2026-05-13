@@ -1,0 +1,54 @@
+---
+title: warmrctl reference
+description: SignalRoom-facing reference for the Warmr command-line control surface.
+---
+
+# warmrctl reference
+
+Status: Current source-backed reference wrapper for Mintlify navigation. The detailed repo-native reference remains `docs/reference/warmrctl.md`.
+
+`warmrctl` is the command-line front end for Warmr.app. Operators and agents should use it for read-only inspection before moving to controlled actions.
+
+## Current command surface
+
+Current:
+
+| Area | Commands |
+| --- | --- |
+| App state | `warmrctl status`, `warmrctl app` |
+| Devices | `warmrctl devices` |
+| Templates | `warmrctl templates` |
+| Threads | `warmrctl thread` |
+| Logs and receipts | `warmrctl logs`, `warmrctl evidence` |
+| Install helpers | `warmrctl install`, `warmrctl upgrade`, `warmrctl uninstall` |
+
+Current global flags:
+
+```bash
+warmrctl --json status
+warmrctl --no-launch status
+warmrctl --socket-path <PATH> status
+warmrctl --app-path <PATH> status
+```
+
+The default control socket is `~/Library/Application Support/Warmr/control/control.sock`. Agents may override it with `WARMR_CONTROL_SOCKET` or `--socket-path` when the operator provides an explicit path.
+
+## Safe usage order
+
+Current:
+
+1. Start with `warmrctl status`.
+2. Inspect devices with `warmrctl devices list`.
+3. Inspect templates and thread state before any action command.
+4. Use `--json` for agent-readable output.
+5. Start or stop runs only after the lane state and operator approval are clear.
+
+## Boundaries
+
+Current:
+
+- `warmrctl` controls Warmr locally. It is not a hosted fleet API.
+- Some action methods require automation to be explicitly enabled.
+- Logs, evidence, and status output are operational receipts, not platform outcome guarantees.
+
+SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes.

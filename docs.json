@@ -1,126 +1,72 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "SignalRoom",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#111827"
   },
-  "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/components",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "Agent ready",
-            "pages": [
-              "agent-ready/prompt",
-              "agent-ready/visibility",
-              "agent-ready/contextual",
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
+        "group": "Start here",
+        "root": "index",
+        "pages": [
+          "signalroom/index",
+          "quickstart",
+          "signalroom/quickstart",
+          "signalroom/safety",
+          "signalroom/agent-docs"
         ]
       },
       {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
-          }
+        "group": "Setup",
+        "pages": [
+          "signalroom/setup/mac-host",
+          "signalroom/setup/iphone-lanes",
+          "signalroom/setup/developer-mode",
+          "signalroom/setup/trust-runner"
+        ]
+      },
+      {
+        "group": "Operator guide",
+        "root": "signalroom/operator-guide/index",
+        "pages": [
+          "signalroom/operator-guide/device-lanes",
+          "signalroom/operator-guide/posting-runs",
+          "signalroom/operator-guide/cooldowns",
+          "signalroom/operator-guide/approvals",
+          "signalroom/operator-guide/logs-and-receipts",
+          "signalroom/operator-guide/failure-recovery"
+        ]
+      },
+      {
+        "group": "Agent docs",
+        "root": "agents/overview",
+        "pages": [
+          "agents/repo-rules",
+          "agents/worktree-protocol",
+          "agents/safe-agent-actions",
+          "agents/forbidden-actions"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "signalroom/reference/warmrctl",
+          "reference/control-plane",
+          "reference/run-state-model",
+          "reference/device-state-model",
+          "reference/log-events"
+        ]
+      },
+      {
+        "group": "Product guardrails",
+        "pages": [
+          "product/signalroom-positioning",
+          "product/claims-guardrails",
+          "mintlify/sync-plan"
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

@@ -1,0 +1,52 @@
+---
+title: Device lanes
+description: Operator model for real iPhone lanes.
+---
+
+# Device lanes
+
+Status: Current architecture plus in-progress operator workflow.
+
+A device lane is one physical iPhone that Warmr can observe and control from the Mac host.
+
+## Current fields
+
+Current device state exposed by the control schema includes:
+
+- `udid`
+- `displayName`
+- `modelName`
+- `iosVersion`
+- `isConnected`
+- `assignedPort`
+- `rodmanInstalledVersion`
+
+Use:
+
+```bash
+warmrctl devices list
+```
+
+or:
+
+```bash
+warmrctl --json devices list
+```
+
+## Operating rule
+
+Current:
+
+- Treat each iPhone lane as single-owner at runtime.
+- Do not run competing tools against the same lane while Warmr owns it.
+- Start with read-only status before any action command.
+
+In progress:
+
+- Human-readable lane status labels for operator review.
+- Readiness checks that combine device, runner, account, and cooldown context.
+
+Planned:
+
+- Lane assignment docs for customer-owned phone setups.
+- Clear recovery steps for offline, busy, or runner-missing lanes.

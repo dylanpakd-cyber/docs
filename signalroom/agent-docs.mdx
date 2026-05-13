@@ -1,0 +1,50 @@
+---
+title: Agent docs
+description: How AI agents should safely work with the Warmr repo and SignalRoom docs.
+---
+
+# Agent docs
+
+Status: Current repo rules plus in-progress curated page for Mintlify.
+
+This page is a curated entry point for AI agents. The source of truth remains the repo files listed below.
+
+## Read first
+
+Current:
+
+1. `STATUS.md`
+2. `CLAUDE.md`
+3. `AGENTS.md`
+4. `CONTEXT.md`
+5. `docs/agents/domain.md`
+6. `docs/agents/worktree-freshness.md`
+7. `docs/agents/code-generation-best-practices.md`
+
+## Non-negotiable repo behavior
+
+Current:
+
+- Do not work in a dirty canonical checkout.
+- Create a fresh worktree from `origin/main` for new implementation, docs, handoff, or issue-scoped work.
+- Run the repo freshness script before issue-scoped work.
+- Stop on stale, diverged, or protected-dirty freshness results.
+- Do not add paid hosted CI triggers without explicit approval.
+- Do not change release, tag, package, or product claims outside the requested scope.
+
+## Safe control-plane behavior
+
+Current:
+
+- Start with read-only commands.
+- Use JSON output for agent parsing.
+- Treat action commands as operator-approved actions.
+- Capture status, logs, and diffs before reporting completion.
+
+## SignalRoom language boundary
+
+Current:
+
+- SignalRoom is the public-facing name and landing layer.
+- Warmr is the repo, app, and control-plane implementation.
+- Public docs must not imply the product is trial-ready unless the repo and operator confirm it.

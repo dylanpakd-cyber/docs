@@ -1,0 +1,45 @@
+---
+title: Safe agent actions
+description: Actions agents may take when working with Warmr docs and control plane.
+---
+
+# Safe agent actions
+
+Status: Current summary.
+
+Agents should bias toward inspection, small changes, and explicit verification.
+
+## Repo-safe actions
+
+Current:
+
+- Read source files and docs.
+- Create or edit repo-native Markdown docs for the requested scope.
+- Run freshness scripts.
+- Run local checks that do not require paid hosted infrastructure.
+- Show git status and diff stats.
+
+## Control-plane-safe actions
+
+Current:
+
+- Run read-only commands such as `status`, `devices list`, `templates list`, and `thread list`.
+- Use `--json` for stable agent parsing.
+- Subscribe to logs for visibility when a run is already approved.
+
+## Action commands
+
+Current:
+
+- `thread start`, `thread stop`, `evidence export`, and app lifecycle commands are action commands.
+- Use them only when operator intent is explicit and lane state is understood.
+- Capture logs and final state after action commands.
+
+## Docs-safe actions
+
+Current:
+
+- Use Current, In progress, and Planned labels.
+- Preserve the SignalRoom and Warmr relationship.
+- Keep copy within the claims guardrails.
+- Do not write credentials, keys, tokens, or private setup secrets into docs.

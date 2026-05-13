@@ -1,0 +1,47 @@
+---
+title: Device state model
+description: Current Warmr device state fields and lane concepts.
+---
+
+# Device state model
+
+Status: Current schema plus in-progress lane docs.
+
+Warmr device state represents customer-owned physical iPhones visible to the Mac host.
+
+## Current device fields
+
+Current:
+
+- `udid`
+- `displayName`
+- `modelName`
+- `iosVersion`
+- `isConnected`
+- `assignedPort`
+- `rodmanInstalledVersion`
+
+## Current operator interpretation
+
+Current:
+
+- `isConnected` tells whether the device is visible to Warmr.
+- `assignedPort` identifies the local port lane when assigned.
+- `rodmanInstalledVersion` identifies the runner version field when available.
+- Device rows alone do not prove a full operator workflow is safe to start.
+
+## In-progress fields
+
+In progress:
+
+- Clearer readiness state.
+- Lane ownership state.
+- Account assignment state.
+- Cooldown or recent-activity context.
+
+## Planned docs
+
+Planned:
+
+- A lane readiness checklist.
+- Recovery guidance for missing trust, missing runner, or stale device state.
