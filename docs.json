@@ -68,11 +68,10 @@
         ]
       },
       {
-        "group": "Product guardrails",
+        "group": "Product claims",
         "pages": [
           "product/signalroom-positioning",
-          "product/claims-guardrails",
-          "mintlify/sync-plan"
+          "product/claims-guardrails"
         ]
       }
     ]
