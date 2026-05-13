@@ -1,0 +1,53 @@
+---
+title: Control-plane reference
+description: JSON-RPC control-plane methods exposed by Warmr.
+---
+
+# Control-plane reference
+
+Status: Current reference from source inspection.
+
+Warmr exposes a JSON-RPC 2.0 control plane over a Unix Domain Socket. The wire format is line-delimited JSON, one JSON object per newline. Successful responses include schema `1.0`.
+
+## Current read methods
+
+Current:
+
+| Method | Purpose |
+|---|---|
+| `status` | App info, devices, active threads. |
+| `devices.list` | Known and connected devices. |
+| `templates.list` | Warmup template summaries. |
+| `thread.list` | Thread job summaries. |
+| `logs.subscribe` | Subscribe to log notifications. |
+| `logs.unsubscribe` | End a log subscription. |
+
+## Current action methods
+
+Current:
+
+| Method | Purpose |
+|---|---|
+| `thread.start` | Start a thread configuration. |
+| `thread.stop` | Stop a thread configuration. |
+| `evidence.export` | Export a minimal evidence bundle. |
+| `app.start` | Ensure Warmr.app is running. |
+| `app.stop` | Terminate Warmr.app if running. |
+| `app.restart` | Terminate and relaunch Warmr.app. |
+
+Some action methods require automation to be explicitly enabled. If automation is disabled, the server returns a domain error instead of performing the action.
+
+## Error codes
+
+Current:
+
+The control plane uses JSON-RPC standard errors plus Warmr-specific server errors in the reserved server range. Current domain errors include template not found, device not found, thread not found, configuration not found, orchestrator unavailable, upload folder unavailable, duplicate run rejected, port allocation exhausted, evidence export failed, lifecycle not supported, and automation disabled.
+
+## Agent contract
+
+Current:
+
+- Parse schema `1.0` responses.
+- Treat new optional fields as compatible within v1.x.
+- Do not depend on human table output when JSON is available.
+- Keep one request per JSON line.

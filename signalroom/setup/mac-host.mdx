@@ -1,0 +1,45 @@
+---
+title: Mac host setup
+description: What the Warmr host Mac is responsible for.
+---
+
+# Mac host setup
+
+Status: Current architecture notes plus planned operator checklist.
+
+Warmr runs on a Mac host. SignalRoom should be described publicly as software that runs on the customer-owned setup, not as a hosted device service.
+
+## Current responsibilities
+
+Current:
+
+- Run Warmr.app.
+- Connect physical iPhones over USB.
+- Provide the local control socket used by `warmrctl`.
+- Host go-ios and port-forwarding helpers bundled with the app.
+- Keep one owner for each connected device lane.
+
+The default control socket path used by `warmrctl` is:
+
+```text
+~/Library/Application Support/Warmr/control/control.sock
+```
+
+Agents may override it with `WARMR_CONTROL_SOCKET` or `--socket-path` when working against a non-default runtime.
+
+## Operator checks
+
+Current:
+
+- Confirm Warmr.app is running or allow `warmrctl` to launch it.
+- Confirm devices are visible with `warmrctl devices list`.
+- Confirm no other Warmr instance owns the same device lane.
+
+In progress:
+
+- A setup checklist for customers installing on their own Mac host.
+- Cleaner docs for helper binary locations and permission prompts.
+
+Planned:
+
+- Trial onboarding docs with guided checks for Mac host readiness, iPhone lanes, and control-plane smoke tests.

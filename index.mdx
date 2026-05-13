@@ -1,133 +1,33 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: SignalRoom docs home
+description: Repo-native entry point for SignalRoom docs backed by the Warmr app and repo.
 ---
 
-## Setting up
+# SignalRoom docs home
 
-Get your documentation site up and running in minutes.
+Status: Current repo-native entry point. Public publishing should stay conservative until trial onboarding is ready.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+SignalRoom is the public-facing name and landing layer. Warmr is the app, repo, and control-plane implementation.
 
-## Make it yours
+SignalRoom is private software for TikTok operators. It is for teams that want to run their own TikTok phone setup with device lanes, posting runs, account state, logs, cooldowns, and operator approvals in one private cockpit.
 
-Design a docs site that looks great and empowers your users.
+The Warmr repo remains the source of truth. Mintlify should publish a curated mirror of these docs only after the project is pointed at this docs root and publication is approved.
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+## Read first
 
-## Create beautiful pages
+Current:
 
-Everything you need to create world-class documentation.
+1. [SignalRoom docs](signalroom/index) for the conservative product overview.
+2. [Quickstart](signalroom/quickstart) for the current setup path.
+3. [Claims and safety](signalroom/safety) before writing public copy or operator-facing docs.
+4. [Agent docs](signalroom/agent-docs) before giving AI agents repo or control-plane tasks.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+In progress:
 
-## Make your content agent ready
+- More operator docs for approvals, cooldown review, receipts, and failure recovery.
+- A public trial path for teams bringing their own Mac host and iPhone lanes.
+- Mintlify publication from this repo-native source tree.
 
-Make your docs work for humans and AI agents alike.
+## Safety framing
 
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
-  </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
-  </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
-  </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes.

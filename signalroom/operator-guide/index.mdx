@@ -1,0 +1,39 @@
+---
+title: Operator guide
+description: Conservative guide to SignalRoom operating concepts backed by Warmr.
+---
+
+# Operator guide
+
+Status: In progress. Use this as a map for repo operators and agents, not a finished public manual.
+
+SignalRoom is the public-facing name and landing layer. Warmr is the app, repo, and control-plane implementation. The operator guide explains how device lanes, run control, logs, cooldowns, approvals, and receipts should fit together.
+
+## Current operating surface
+
+Current:
+
+- Device lanes are visible through `warmrctl devices list`.
+- Templates are visible through `warmrctl templates list`.
+- Threads are visible through `warmrctl thread list`.
+- Logs are subscribable through `warmrctl logs`.
+- Minimal evidence export exists through `warmrctl evidence export`.
+- Control-plane action methods can start and stop thread configurations when automation is enabled.
+
+## In-progress operator concepts
+
+In progress:
+
+- Posting runs as a human-readable operator workflow name.
+- Cooldown review and pacing surfaces.
+- Operator approvals before controlled runs.
+- Clear receipts for what happened on each lane.
+- Failure recovery docs that help the operator decide whether to retry, stop, or inspect.
+
+## Planned public docs
+
+Planned:
+
+- Trial setup path for teams bringing their own phones.
+- Call based access and guided onboarding docs.
+- Public docs that avoid overstating incomplete behavior.

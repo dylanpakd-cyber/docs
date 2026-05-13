@@ -1,0 +1,31 @@
+---
+title: Developer Mode
+description: Conservative notes for iPhone Developer Mode and trust prerequisites.
+---
+
+# Developer Mode
+
+Status: In progress. This file records the setup boundary without pretending to be a complete public setup guide.
+
+Warmr depends on real iPhones being ready for local automation from the Mac host. Device trust and Developer Mode are prerequisites for a reliable iPhone lane.
+
+## Current boundary
+
+Current:
+
+- Operators should complete trust prompts and Developer Mode setup before expecting a lane to run.
+- Agents should not assume a disconnected or untrusted phone can be fixed from repo code alone.
+- Setup state should be confirmed before starting a run.
+
+## Safe agent behavior
+
+Current:
+
+- Read repo protocol before changing setup docs.
+- Prefer `warmrctl devices list` for observed device state.
+- Treat device setup prompts as operator-owned unless a repo runbook explicitly says otherwise.
+
+Planned:
+
+- Step-by-step customer onboarding docs for trust prompts, Developer Mode, and first device smoke tests.
+- Clear screenshots or support notes once the product flow is trial-ready.

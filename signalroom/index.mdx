@@ -1,0 +1,47 @@
+---
+title: SignalRoom docs
+description: Private software for TikTok operators, backed by the Warmr repo and app.
+---
+
+# SignalRoom docs
+
+Status: Current repo-native overview. Public publishing should stay conservative until trial onboarding is ready.
+
+SignalRoom is the public-facing name and landing layer. Warmr is the app, repo, and control-plane implementation.
+
+SignalRoom is private software for TikTok operators. It helps teams run their own TikTok phone setup with the control layer founders and growth teams need: device lanes, posting runs, account state, logs, cooldowns, and operator approvals in one private cockpit.
+
+The current repo source of truth remains Warmr. These docs are repo-native first. Mintlify should mirror curated pages from this tree rather than become the only source of truth.
+
+## What is current
+
+Current:
+
+- Warmr is a macOS app that drives customer-owned physical iPhones.
+- Warmr uses go-ios and a vendored XCTest runner to talk to real devices.
+- Warmr has a local JSON-RPC control plane over a Unix Domain Socket.
+- `warmrctl` is the CLI front end for agents and operators.
+- Current CLI surfaces include status, devices, templates, threads, logs, evidence export, app lifecycle, and install helpers.
+- Control-plane responses use schema `1.0`.
+
+In progress:
+
+- Operator-facing workflows for run control, receipts, cooldown review, and repeatable posting-run paths.
+- AI-agent documentation that makes safe repo work, handoffs, and control-plane usage more explicit.
+- Public SignalRoom docs that can be published once trial access is ready.
+
+Planned:
+
+- More complete operator docs for approvals, account state review, and failure recovery.
+- Curated Mintlify publication from this repo-native source tree.
+- Trial-oriented setup docs for teams bringing their own Mac host and iPhone lanes.
+
+## What SignalRoom is not
+
+SignalRoom is not a hosted device business, outsourced fleet operation, broad social platform, or agency. It is serious operator software for teams that want to buy and run it themselves on their own setup with guided onboarding.
+
+## Safety framing
+
+SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes.
+
+Use these docs to understand the repo, the control plane, and the safe operating boundaries before expanding product or public docs.

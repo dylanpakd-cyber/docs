@@ -1,0 +1,43 @@
+---
+title: Log events
+description: Current log notification schema and receipt direction.
+---
+
+# Log events
+
+Status: Current log event reference plus planned receipt direction.
+
+The control plane uses server-pushed JSON-RPC notifications for log streaming.
+
+## Current notification
+
+Current:
+
+- Method: `log.line`
+- Emitted after `logs.subscribe`.
+- Can be filtered by configuration and account username through subscribe params.
+
+Current payload fields:
+
+- `subscriptionId`
+- `timestamp`
+- `configurationName`
+- `accountUsername`
+- `severity`
+- `message`
+
+## Current CLI behavior
+
+Current:
+
+- `warmrctl logs` subscribes, prints the subscription result, and then unsubscribes unless `--follow` is present.
+- `warmrctl logs --follow` keeps the subscription open and streams notifications.
+- `--json` prints JSON-RPC frames for agent parsing.
+
+## Planned receipt model
+
+Planned:
+
+- Link logs to run receipts.
+- Include lane, account, template, approval, and stop reason where supported by the repo.
+- Preserve enough evidence for review without making platform outcome claims.

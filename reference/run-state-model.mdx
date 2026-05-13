@@ -1,0 +1,53 @@
+---
+title: Run state model
+description: Current and planned model for runs, threads, and posting-run language.
+---
+
+# Run state model
+
+Status: Current schema plus in-progress operator vocabulary.
+
+The current implementation exposes thread jobs. SignalRoom public language can call the operator workflow a posting run, but docs must not imply a finished public posting-run product where the repo only exposes thread state.
+
+## Current thread summary fields
+
+Current:
+
+- `id`
+- `configurationId`
+- `configurationName`
+- `accountUsername`
+- `deviceUDID`
+- `deviceName`
+- `status`
+- `startedAt`
+- `finishedAt`
+- `elapsedSeconds`
+- `videosWatched`
+- `likesGiven`
+- `favoritesGiven`
+- `errorMessage`
+
+## Current commands
+
+Current:
+
+- `warmrctl thread list`
+- `warmrctl thread start --configuration-id <ID>`
+- `warmrctl thread stop --configuration-id <ID>`
+
+## In-progress vocabulary
+
+In progress:
+
+- Posting run: the operator-facing workflow label.
+- Thread: current control-plane job object.
+- Receipt: planned operator-readable record of what happened.
+- Approval: planned review step before controlled action.
+
+## Planned docs
+
+Planned:
+
+- A complete state transition diagram once operator flows harden.
+- Failure and retry rules based on observed statuses.

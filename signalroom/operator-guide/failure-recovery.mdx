@@ -1,0 +1,58 @@
+---
+title: Failure recovery
+description: Conservative failure recovery rules for operators and agents.
+---
+
+# Failure recovery
+
+Status: In progress.
+
+Failure recovery should bias toward inspection, logs, and small controlled steps. Do not mask a device, runner, or account-state problem with repeated action attempts.
+
+## Current first checks
+
+Current:
+
+1. Check app and schema state:
+
+```bash
+warmrctl status
+```
+
+2. Check device lanes:
+
+```bash
+warmrctl devices list
+```
+
+3. Check active or recent threads:
+
+```bash
+warmrctl thread list
+```
+
+4. Review logs:
+
+```bash
+warmrctl logs --follow
+```
+
+5. Export minimal evidence if needed:
+
+```bash
+warmrctl evidence export
+```
+
+## Recovery stance
+
+Current:
+
+- Stop if the lane is not clearly ready.
+- Do not run multiple owners against the same phone.
+- Prefer evidence and handoff notes over repeated retries.
+- Keep repo changes separate from operator recovery unless a bug is clearly identified.
+
+Planned:
+
+- Decision trees for disconnected phone, runner unavailable, port conflict, action rejected, and unexpected app state.
+- A support-ready receipt format.

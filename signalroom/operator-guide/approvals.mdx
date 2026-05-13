@@ -1,0 +1,36 @@
+---
+title: Approvals
+description: Operator approval boundaries for controlled runs.
+---
+
+# Approvals
+
+Status: In progress.
+
+Approvals are a product and operating principle: the operator should understand the lane, account, template, and recent logs before a controlled run starts.
+
+## Current safe behavior
+
+Current:
+
+- Agents should inspect state before taking action.
+- Action commands should only be used after operator intent is clear.
+- Some control-plane actions require automation to be explicitly enabled.
+- Repo agents must not make product or public-claim changes beyond the requested scope.
+
+## Approval checklist
+
+In progress:
+
+1. Confirm device lane is connected and not owned by another runtime.
+2. Confirm the account and configuration are the intended target.
+3. Review recent logs or receipts.
+4. Confirm cooldown and pacing expectations.
+5. Run the smallest safe action.
+6. Capture logs and result state.
+
+Planned:
+
+- Cockpit-level approvals.
+- Approval receipts connected to run logs.
+- Public trial docs that explain review without promising outcomes.

@@ -1,0 +1,47 @@
+# SignalRoom and Warmr LLM context
+
+Status: Current repo-native context for agents. Canonical source: Warmr repo docs.
+
+SignalRoom is the public-facing name and landing layer. Warmr is the app, repo, and control-plane implementation.
+
+SignalRoom one-liner: Private software for TikTok operators.
+
+SignalRoom body: Run your own TikTok phone setup with the control layer founders and growth teams need. Device lanes, posting runs, account state, logs, cooldowns, and operator approvals in one private cockpit.
+
+CTA: Book a call to trial SignalRoom on your own setup.
+
+Lower-page line: Private TikTok ops software for teams running their own iPhone farm.
+
+Required safety line: SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes.
+
+Current implementation facts:
+
+- Warmr is a macOS app for customer-owned physical iPhones.
+- Warmr uses go-ios and a vendored XCTest runner to operate device lanes.
+- Warmr exposes a JSON-RPC 2.0 control plane over a Unix Domain Socket.
+- Successful control-plane responses include schema 1.0.
+- warmrctl version in source is 1.0.0.
+- warmrctl global options include --json, --no-launch, --socket-path, and --app-path.
+- Default socket path: ~/Library/Application Support/Warmr/control/control.sock.
+- Socket override environment variable: WARMR_CONTROL_SOCKET.
+- Current read commands include status, devices list, templates list, thread list, and logs.
+- Current action commands include thread start, thread stop, evidence export, and app lifecycle commands. Use only after operator intent is explicit.
+
+Docs rules:
+
+- Use Current, In progress, and Planned labels.
+- Do not overstate unfinished product behavior.
+- Do not position SignalRoom as phone hosting, managed operations, a broad enterprise social suite, or an agency.
+- Do not promise platform outcomes.
+- Do not describe hidden or evasive behavior.
+- Do not invent metrics, testimonials, or scarcity.
+- Keep the Warmr repo as canonical source. Mintlify should mirror curated docs.
+
+Important repo protocol for agents:
+
+- Read STATUS.md first.
+- Read CLAUDE.md second.
+- Read AGENTS.md and CONTEXT.md before changes.
+- Do new work in a fresh worktree from origin/main unless the operator explicitly says otherwise.
+- Do not edit a dirty canonical checkout.
+- Do not commit, push, tag, release, delete remote docs, or publish broad public claims without explicit operator approval.

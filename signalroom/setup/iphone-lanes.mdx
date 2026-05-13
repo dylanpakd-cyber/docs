@@ -1,0 +1,49 @@
+---
+title: iPhone lanes
+description: How Warmr thinks about customer-owned iPhone lanes.
+---
+
+# iPhone lanes
+
+Status: Current architecture notes with planned operator workflow details.
+
+An iPhone lane is a real physical device connected to the Mac host and owned by exactly one active Warmr runtime. SignalRoom should be positioned around customer-owned iPhone lanes, not rented or hosted phones.
+
+## Current model
+
+Current:
+
+- Warmr discovers connected iPhones through go-ios.
+- Each device has a UDID, display name, model name, connection state, and optional assigned port.
+- The control plane exposes known devices through `devices.list`.
+- Warmr uses device-specific runner lanes for automation and observation.
+- Existing architecture uses per-device port allocation with a lane stride to keep device routes separated.
+
+Useful read-only command:
+
+```bash
+warmrctl devices list
+```
+
+Useful agent command:
+
+```bash
+warmrctl --json devices list
+```
+
+## Lane readiness
+
+Current:
+
+- The device must be connected and trusted.
+- The runner lane must be available.
+- Another app or Warmr instance should not own the same lane.
+
+In progress:
+
+- A richer operator-ready lane checklist.
+- More explicit lane state docs for disconnected, busy, errored, or runner-missing devices.
+
+Planned:
+
+- Operator guidance for assigning accounts, reviewing readiness, and recovering a failed lane.
