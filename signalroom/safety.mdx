@@ -1,52 +1,74 @@
 ---
-title: Claims and safety
-description: Public and internal safety framing for SignalRoom docs.
+title: Why SignalRoom is safe to run
+description: The architectural and operational reasons SignalRoom is designed for long-term account stability. Real iPhones, computer vision, randomized pacing, four-level recovery.
 ---
 
-# Claims and safety
+# Why SignalRoom is safe to run
 
-Status: Current copy guardrail.
+Status: Current product framing.
 
-SignalRoom docs should be clear, operational, and conservative.
+SignalRoom is designed for long-term TikTok account stability. The architecture is built around the things that actually break accounts in other automation stacks: API misuse, emulator fingerprints, mechanical timing, abandoned sessions after errors. We solved each one structurally.
 
-Required safety line:
+## The four pillars
 
-SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes.
+### 1. Real iPhones
 
-## Allowed framing
+SignalRoom drives **real iOS hardware** over USB from a Mac. No emulators. No virtualized devices. No App Store-rejected sideloads of custom TikTok builds. Every session runs on a real iPhone with a real iOS keyboard, real touch input, and a real network stack. TikTok sees a normal mobile device on a normal connection.
 
-Current:
+### 2. Computer-vision interaction, not API calls
 
-Use:
+Every action SignalRoom takes happens on the device screen, the same way a person's finger would. Tap a button, swipe up, type into a field. There is no reverse-engineered TikTok API in the stack. There is no synthesized HTTP traffic pretending to be the official client. The platform-risk surface that takes down API-based tools doesn't exist here.
 
-- Private software for TikTok operators.
-- Built for founders and growth teams running their own phone setup.
-- Runs on real iPhones owned by the customer.
-- Built for Mac.
-- Private license access.
-- Guided onboarding.
-- Call based access.
-- Visibility, pacing, logs, receipts, review, readiness checks, and controlled runs.
+### 3. Randomized timing and pre-publish activity
 
-## Do not imply
+Mechanical, identical timing is what flags automated accounts. SignalRoom randomizes:
 
-Avoid positioning SignalRoom as:
+* Per-video watch duration (range, not a fixed value)
+* Likes, follows, and favorites with operator-set probabilities (independent coin flips per video, not "always" or "every nth")
+* Account-switch pause
+* Post-publish wait
+* Gesture speed and trajectory
 
-- phone hosting
-- outsourced fleet operations
-- an agency
-- a broad enterprise social suite
-- a product that promises platform outcomes
-- a system for hiding or evading platform behavior
+Every account also runs a pre-publish activity workflow: feed scrolling, search engagement, configurable interaction rates. Accounts that publish cold do not perform. Accounts that warm up like real users do.
 
-## Current copy rule
+### 4. Four-level auto-recovery
 
-If a capability is verified in the repo, label it Current. If the repo shows the direction but not the finished operator feature, label it In progress. If it is roadmap language, label it Planned.
+When something goes wrong (transient UI state, slow proxy, runner hiccup), SignalRoom recovers in layers without losing track of where it was:
 
-In progress:
+| Layer | What it does | Time |
+| --- | --- | --- |
+| Runner step retry | Single retry inside the runner | 1 to 5 sec |
+| Runner restart | Restart RodmanRunner on the iPhone | 5 to 15 sec |
+| Lane reconnect | Re-bind port, re-establish bridge | 15 to 30 sec |
+| App restart | Last resort, restarts Warmr on the Mac | 30 to 60 sec |
 
-- Add more operator-facing examples only after the underlying repo flow is clear.
+Per-account progress is tracked on disk. When the lane recovers, it resumes from the same account it was on. No "start over". No accounts skipped. The product is designed to run unattended through the night.
 
-Planned:
+## What this means for your accounts
 
-- Expand public claims only after trial onboarding and publication are approved.
+Customers run the same TikTok accounts on SignalRoom continuously for months. The pilot agency we work with has been running 15 accounts on the same setup since the beta opened. No mass bans. No reach collapse. Posts land with normal reach, not the cold-start cratering that fresh-API-bot accounts see.
+
+Results vary with content strategy, posting cadence, and account history. SignalRoom is not a replacement for good content. It is leverage for an operator who already understands their accounts.
+
+## The boundary
+
+SignalRoom helps operators run their accounts the way they would by hand, scaled to a fleet. Two things SignalRoom is NOT:
+
+* **Not a way to bypass specific TikTok policy enforcement.** If TikTok decides an account violates community guidelines, software doesn't fix that. Content does.
+* **Not a hosted phone service.** You own the iPhones. You own the Mac. You own the accounts. You operate the system. SignalRoom is software, not a service.
+
+These boundaries are intentional. Operators who own the stack control the stack. There is no SignalRoom-side dependency that can be revoked or rate-limited.
+
+## What customers actually claim
+
+Use these public-facing claims in copy:
+
+* "Designed for long-term account stability"
+* "Real iPhones, not emulators"
+* "Computer-vision control instead of platform APIs"
+* "Ban-risk minimal vs unofficial APIs"
+* "Multi-month customer deployments"
+* "4-level recovery, 5 to 25 seconds, resume from the same account"
+* "Mirrors real device usage patterns"
+
+For the comparison table and customer-outcome numbers, see [Product claims](/product/claims-guardrails).

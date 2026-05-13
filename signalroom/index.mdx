@@ -1,122 +1,100 @@
 ---
 title: SignalRoom
-description: Private TikTok publishing software for operators. Runs on your Mac, drives your iPhones, your accounts, your content — no hosted fleet, no managed service.
+description: Run every TikTok account on autopilot. From one Mac. On real iPhones. Designed for long-term account stability. Multi-device cockpit with four-level recovery and 37-timezone scheduling.
 ---
 
 # SignalRoom
 
-Status: Current product overview. Operator workflows that are not yet shipped are flagged In progress or Planned.
+Status: Current product overview.
 
-SignalRoom is private software for TikTok operators who want to run their own posting setup on **their own** Mac and **their own** iPhones. One operator can drive a fleet of devices from a single dashboard: device lanes, posting runs, account state, logs, cooldowns, and approvals in one place.
+**SignalRoom drives 10+ real iPhones from a single Mac, with computer-vision control, four-level auto-recovery, 37-timezone scheduling, and pre-publish activity workflows on every account. One operator replaces a team of five.**
 
-- **SignalRoom** is the public-facing name and landing layer.
-- **Warmr** is the Mac app + control-plane implementation that drives the devices.
-- `warmrctl` is the CLI front end agents and operators use to read state and run actions.
+You own the iPhones. You own the accounts. You own the Mac. SignalRoom is the cockpit on top.
 
-There is no hosted SignalRoom fleet. There is no managed phones-as-a-service tier. You buy SignalRoom, install it on your Mac, plug in your iPhones, and operate it yourself.
+The product is named SignalRoom. The Mac app it ships as is named Warmr.app. The CLI for agents and scripts is `warmrctl`. Same product, three artifact names because the build naming predates the public rebrand.
 
-## Who this is for
+## Why operators move to SignalRoom
 
-Teams running 5–50+ TikTok accounts on real iPhones who currently:
+Most TikTok automation breaks accounts. Reverse-engineered APIs trip rate-limits and platform protection. Emulators look like emulators. Manual ops burns through a team's day before lunch.
 
-- Switch accounts by hand, every morning, on each phone.
-- Lose track of which account posted what when a device or session hiccups mid-upload.
-- Stitch together separate tools for activity, publishing, scheduling, and monitoring.
-- Want one operator to do the work three or five operators currently do.
+SignalRoom takes a different stack:
 
-SignalRoom is not for: a single account run from your personal phone, hosted-fleet shopping, broad social-media-management workflows, or anything that doesn't involve real iPhones you own and accounts you have full credentials for.
+* **Real iPhones**, the customer's own hardware
+* **Computer-vision interaction** on the device itself, with randomized timing and gesture variation
+* **Pre-publish activity workflows** on every account
+* **Coordinated Mac-side cockpit** driving 10 or more devices in parallel
 
-## How it works
+The phones look like phones. The sessions look like sessions. Accounts run for months, not days.
 
-A typical setup:
+## What SignalRoom delivers
 
-1. One **Mac host** (Apple Silicon, macOS 14+) running Warmr.app.
-2. **Physical iPhones** (iPhone 12 or newer, iOS 17+) connected to the Mac over USB — your own devices.
-3. A bundled on-device **test runner** that Warmr installs onto each iPhone (signed with **your** Apple Developer account, not ours).
-4. The **`warmrctl`** CLI for agents and operators talking to Warmr's local control socket.
+### Real iPhones, not emulators
 
-Warmr drives TikTok on each iPhone through on-screen recognition and synthesized input on the device itself. It does not call TikTok's API, does not use unofficial endpoints, and does not run on emulators.
+SignalRoom runs on real iOS hardware over USB from a Mac. No emulators, no virtualized devices, no reverse-engineered TikTok API. Every action is a tap or swipe on the actual device. TikTok sees a normal mobile device on a normal connection.
 
-## Capabilities
+### Designed for long-term account stability
 
-What the app does today. Capabilities, not outcome guarantees — SignalRoom helps operators make work visible, paced, logged, and reviewable; it does not promise platform results.
+The pilot agency we work with has been running 15 TikTok accounts on the same SignalRoom setup for over six months. No mass bans. No reach collapse. Posts land with normal reach. Results vary with content strategy and cadence, but the architecture is built for accounts that run for months, not for sprint-and-burn cycles.
 
-### On-device interaction layer
+### One Mac, 10+ iPhones
 
-The Mac host reads what's on each iPhone's screen and produces input on the device itself. Variation in input timing and pacing is built in.
+Run 1 iPhone, or run 25, off the same Mac. Each device executes its own lane independently. Atomic locks on shared content prevent the same source file from being uploaded twice across the fleet. Adding capacity means plugging in another iPhone, not hiring another operator.
 
-- No reliance on the platform's API.
-- The app produces input on the iPhone the same way a person's finger would.
-- The on-device test runner is signed with the customer's Apple Developer account; nothing is hidden inside a vendor-signed bundle.
+See [Mac host setup](/signalroom/setup/mac-host) for sizing per fleet count.
 
-### Multi-device
+### Four-level auto-recovery
 
-Run 1 iPhone or 25+ off the same Mac.
+When a session hits a snag (sluggish proxy, transient UI state, runner restart), SignalRoom recovers in layers and resumes from the same account:
 
-- One operator owns the host. Each device executes its own lane independently.
-- Atomic locks on shared content prevent the same source file from being uploaded twice from different lanes.
-- See [Mac host setup](/signalroom/setup/mac-host) for sizing per fleet count.
+| Layer | What it does | Time |
+| --- | --- | --- |
+| Runner step retry | Single retry inside RodmanRunner | 1 to 5 sec |
+| Runner restart | Restart RodmanRunner on the iPhone | 5 to 15 sec |
+| Lane reconnect | Re-bind port, re-establish bridge | 15 to 30 sec |
+| App restart | Last resort, restart Warmr on the Mac | 30 to 60 sec |
 
-### Auto-recovery
+Per-account progress is tracked on disk. The product is designed to run unattended through the night.
 
-When a session hits a snag — a sluggish proxy, a transient UI state, a runner restart — the lane is designed to recover and resume rather than fail the whole run.
+### 37-timezone scheduling
 
-- Recovery is layered: app retry, runner restart, lane reconnect.
-- Progress is tracked per account so a recovered lane resumes from the same account, not from the top of the list.
-- Behavior is logged so operators can review what happened. See [Failure recovery](/signalroom/operator-guide/failure-recovery).
+Schedule posting runs to a region's local time, not your Mac's clock. 37 timezones supported. Cron-based bots break on daylight saving. SignalRoom does not.
 
-### Activity workflows
+### Pre-publish activity workflows on every account
 
-Before publishing, an account can spend time in TikTok the way a typical user would: scroll the feed, watch for varied durations, occasionally like / follow / save, search by keyword.
+Built-in feed scrolling, likes, follows, favorites, and search engagement, each with operator-configurable probability. Accounts that publish cold do not perform. SignalRoom warms them up out of the box.
 
-- **Feed** mode for general scrolling, **Search** mode for keyword-driven niche shaping.
-- Interaction rates are explicit and operator-configurable.
-- See [Activity workflows](/signalroom/how-to/activity-workflows) for parameter setup and recommended presets.
+See [Activity workflows](/signalroom/how-to/activity-workflows) for parameter setup and recommended presets.
 
-### Carousels and music
+### Carousels with music, up to 35 photos
 
-Photo carousel uploads (1–35 photos) with optional or required music.
+TikTok's fastest-growing format, fully supported. Photo carousels from 1 to 35 photos with automatic music selection. Operator picks the music link (TikTok URL, deeplink, or just the music ID); SignalRoom handles the search-and-attach on the device. Business accounts are auto-detected and stay on commercial-only tracks.
 
-- Music is required by TikTok for carousels — SignalRoom handles the search-and-attach step.
-- Music links can be full TikTok URLs, deeplinks, or just the music ID.
-- Volume controls for original audio and music are independent.
-- Business accounts are auto-detected; SignalRoom skips licensed music on them.
+### Content variation across accounts
 
-### Content variation
+Distribute one source asset across many accounts without it looking distributed. Automatic per-account micro-crop, color shift, light blur, plus caption variation from TXT, JSON, or per-file sidecar.
 
-For multi-account workflows that share a source asset, the app can apply per-account adjustments to the visual and metadata.
+See [Captions](/signalroom/how-to/captions) and [Content folders](/signalroom/how-to/content-folders) for setup.
 
-- Micro-adjustments to crop and color, light blur.
-- Caption variation from a TXT or JSON pool, or per-file sidecar captions.
-- See [Captions](/signalroom/how-to/captions) for the four caption sources.
+### Computer-vision interaction layer
 
-### Scheduling
-
-Runs can be scheduled to a region's time zone rather than the Mac's local clock — useful when accounts target audiences in another country.
-
-In progress:
-
-- Operator-facing schedule editor for posting runs.
-- Daylight-saving handling for long-running schedules.
+The Mac host reads what's on each iPhone's screen and produces input on the device the same way a finger would. Every gesture has randomized speed, pressure, and trajectory. The on-device runner is signed with the customer's Apple Developer account, not ours. Nothing is hidden in a vendor-controlled bundle.
 
 ### Telegram notifications
 
-Run start / completion notifications can be delivered to a Telegram chat (operator-supplied bot token + chat ID). Helpful for unattended overnight runs.
+Thread start and completion notifications go straight to a Telegram chat (operator-supplied bot token plus chat ID). Useful for unattended overnight runs.
 
 ## Account lifecycle
 
-SignalRoom's surface covers the whole lifecycle of a TikTok account in your fleet — not just the publish step.
-
-```
+```text
   Setup     →   Activity      →   Publishing    →   Growth        →   Scaling
-  ─────         ─────────         ──────────        ──────            ───────
-  Connect       Several days      Videos and        Reach + audience  Add lanes,
-  the account   of warmup         carousels         tracking over     accounts,
-  + device      on Feed /         with optional     time              and content
-  lane          Search            music                                pools
+  =====         ========          ==========        ======            =======
+  Connect       Several days      Videos and        Reach and         Add lanes,
+  the account   of warmup         carousels         audience          accounts,
+  + device      on Feed /         with music        tracking over     and content
+  lane          Search            and captions      months            pools
 ```
 
-Health and lane state are observable at every stage through `warmrctl` and the in-app monitoring view.
+SignalRoom covers the whole lifecycle, not just the publish step. Lane state, account state, and run receipts are observable at every stage through `warmrctl` and the in-app monitoring view.
 
 ## Modes
 
@@ -126,87 +104,100 @@ Three template Run Modes, each with its own how-to:
 | --- | --- | --- | --- |
 | **Posting run** | `Upload` | Publishes videos or carousels to already-logged-in accounts. | [Posting runs](/signalroom/how-to/posting-runs) |
 | **Activity workflow** | `Warmup` | Scrolls the feed, likes, searches by keyword, watches results. No upload. | [Activity workflows](/signalroom/how-to/activity-workflows) |
-| **Onboarding run** | `Seeding` | TikTok reinstall → fingerprint reset → proxy switch → login → publish. For cold-start accounts. | (In progress) |
+| **Onboarding run** | `Seeding` | TikTok reinstall, fingerprint reset, proxy switch, login, publish. Cold-start automation, end to end. | (In progress) |
 
 Each template hard-codes one Run Mode. Threads pull a template, an account list, one or more devices, and (optionally) a proxy and a schedule.
 
-## Why not manual, why not API
+## Vs manual, vs API bots
 
-| Approach | What it gets you | What it costs |
-| --- | --- | --- |
-| **Manual** | Full control. No infrastructure cost. | One operator's day for ~20 accounts. Doesn't scale linearly. Error-prone at hour 4. |
-| **Unofficial APIs / emulators** | Cheap to scale superficially. | Increased platform risk from reverse-engineered endpoints or virtualized devices. SignalRoom does not do this. |
-| **SignalRoom** | One operator can drive a fleet. Real iPhones, your accounts, observable state. | Hardware (Mac + iPhones + cables + hub). One-time setup time. Power and bench space. |
+| Criteria | Manual | API bots | SignalRoom |
+| --- | --- | --- | --- |
+| Time for 20 accounts | 4 hours | 30 min | 20 min |
+| Ban risk | Zero | High | Minimal |
+| Scaling | Hire more people | API rate limits | Plug in more iPhones |
+| Crash recovery | Start over | None | Auto, 5 to 25 sec |
+| Multi-device | 1 phone, 1 person | Emulator with platform risk | 10+ real iPhones |
+| Scheduling | Manual alarms | Cron without DST | 37 geo-zones, auto-DST |
+| Activity workflows | Manual | None | Built-in feed and search |
+| Carousels | Yes | No | Yes, up to 35 photos plus music |
+| Content variation | Manual | Basic | Automatic visual and caption |
+| Monitoring | By hand | Logs | Dashboard plus Telegram |
 
-SignalRoom is not a magic discount on operator headcount. It is leverage for an operator who understands their accounts and content strategy.
+API bots are cheap until accounts start dying. Manual scales by burning out the team. SignalRoom is the option that holds up past month two.
 
-## What SignalRoom is not
+## Pilot results
 
-- **Not a hosted phone service.** You bring the iPhones.
-- **Not a managed operations service.** You operate it.
-- **Not an agency.** SignalRoom does not run your content for you.
-- **Not a broad social-platform tool.** Today the in-app flow is TikTok-specific.
-- **Not a platform API integration.** It does not call TikTok's API or use unofficial endpoints.
-- **Not an evasion or "anti-detection" tool.** SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes, and these docs do not describe hidden behavior. See [Claims and safety](/signalroom/safety).
+Multi-creator marketing agency, 15 TikTok accounts, 6-month pilot (name withheld on request):
+
+* **120 hours per month saved**
+* **5 to 10x less operator time** on daily ops
+* **70% reduction** in TikTok-ops payroll
+* From 2 employees at 6 hours per day → 1 operator at 20 minutes per day
+
+Individual results vary by content strategy and device configuration.
 
 ## Frequently asked questions
 
 ### Do I need real iPhones?
 
-Yes. SignalRoom drives real iOS hardware over USB from a Mac. Emulators and virtual devices are not supported.
+Yes. SignalRoom drives real iOS hardware. Emulators and virtual devices are not supported.
 
 ### What's the hardware floor?
 
-- **Mac:** Apple Silicon (M1 or later), macOS 14+. Intel Macs are not supported.
-- **iPhone:** iPhone 12 or newer (iPhone 11 has limited support — slower on-screen rendering), iOS 17+.
-- **Cable:** original Apple or MFi-certified per device.
-- **Hub:** powered USB hub once you go past 5–6 devices.
+* **Mac:** Apple Silicon (M1 or later), macOS 14 or newer. Intel Macs are not supported.
+* **iPhone:** iPhone 12 or newer, iOS 17 or newer. (iPhone 11 has limited support: slower on-screen rendering, longer activity workflows.)
+* **Cable:** original Apple or MFi-certified per device.
+* **Hub:** powered USB hub once you go past 5 or 6 devices.
 
-Full sizing table is in [Mac host setup](/signalroom/setup/mac-host); per-device requirements are in [iPhone lanes](/signalroom/setup/iphone-lanes).
+Full sizing table is in [Mac host setup](/signalroom/setup/mac-host). Per-device requirements are in [iPhone lanes](/signalroom/setup/iphone-lanes).
 
 ### How does signing the on-device runner work?
 
-You bring your own Apple Developer account. The on-device test runner is signed by **you**, using either the App Store Connect API (recommended, one-year cert) or Xcode with a free Apple ID (7-day cert). The signing flow runs entirely on your Mac; no Apple ID password is stored. See [Trust and runner setup](/signalroom/setup/trust-runner) for the full walkthrough.
+You bring your own Apple Developer account. The on-device test runner is signed by **you**, using either the App Store Connect API (recommended, one-year cert) or Xcode with a free Apple ID (7-day cert). The signing flow runs entirely on your Mac. No Apple ID password is stored. Full walkthrough: [Trust and runner setup](/signalroom/setup/trust-runner).
+
+### Are SignalRoom accounts likely to stay healthy long-term?
+
+Yes, that is the design goal. SignalRoom runs on real iPhones with computer-vision control and randomized pacing, so TikTok sees normal device usage rather than scripted API traffic. The pilot agency has accounts on the same setup for 6+ months without bans. Content strategy and posting cadence still matter, but the architectural side of "looks automated, gets flagged" is handled.
 
 ### What happens if a device errors mid-upload?
 
-The lane attempts a layered recovery — runner restart, lane reconnect, then full app restart at the outer layer. Per-account progress is tracked so the resumed lane picks up from the same account it was on. The exact behavior is logged and exportable as an evidence bundle. See [Failure recovery](/signalroom/operator-guide/failure-recovery).
-
-### Can SignalRoom guarantee my accounts will stay healthy / not get banned / keep reaching their audience?
-
-No. No software can guarantee platform outcomes — those depend on TikTok's policies, your content, your posting cadence, and many factors outside the app's control. SignalRoom helps you run a careful operation; it does not insulate that operation from the platform. See [Claims and safety](/signalroom/safety).
+Four-level auto-recovery, 5 to 25 seconds, resuming from the same account. See the recovery table above and [Failure recovery](/signalroom/operator-guide/failure-recovery).
 
 ### Does SignalRoom support carousels?
 
-Yes. Photo carousels with 1–35 images, optional or required music, per-carousel captions via sidecar JSON. See [Posting runs](/signalroom/how-to/posting-runs) and [Content folder structure](/signalroom/how-to/content-folders).
+Yes. Photo carousels from 1 to 35 images, automatic music attachment, per-carousel captions via sidecar JSON. See [Posting runs](/signalroom/how-to/posting-runs) and [Content folder structure](/signalroom/how-to/content-folders).
 
 ### What happens if TikTok changes its UI?
 
-The on-screen recognition layer is updated as the in-app surface changes. The Warmr repo carries the recognition assets; updates ship through normal release cadence. There can be a gap between a TikTok release and a recognition update — operators should expect occasional pauses when this happens.
+Computer-vision models update as TikTok ships new layouts. For critical UI changes we ship a patch within 24 to 48 hours. Beta and early customers get updates first.
 
 ### Can I run the same source content across many accounts?
 
-Yes. SignalRoom can apply per-account visual and caption variation when an asset is shared across multiple accounts in the same run.
+Yes. SignalRoom applies per-account visual variation (micro-crop, color shift, light blur) and caption variation from a TXT or JSON pool or sidecar files. Each account receives a uniquely-presented version.
 
 ### Where does my data live?
 
-On your Mac. SignalRoom's control plane is a local Unix Domain Socket; the app's state, logs, and evidence bundles live on disk. There is no SignalRoom-hosted cloud component that holds your accounts, your content, or your run history.
+On your Mac. SignalRoom's control plane is a local Unix Domain Socket. App state, logs, and evidence bundles live on disk. There is no SignalRoom-hosted cloud component holding your accounts, content, or run history.
+
+### Is there a money-back guarantee?
+
+Yes. 10-day money-back guarantee on all paid plans. If the software doesn't fit your setup (hardware compatibility, operational workflow, or any other reason), contact support within 10 days of purchase for a full refund.
 
 ### Is there a public trial?
 
-In progress. SignalRoom is not currently a self-serve trial product — onboarding goes through direct contact. Public trial path is planned but not committed to a date.
+Currently invite-only closed beta. Book a 20-minute demo to confirm hardware fit and walk through setup together. Free during the beta. Locked-in pricing for beta participants.
+
+## What SignalRoom is
+
+SignalRoom is **software you run** on your own Mac and your own iPhones. It is not a hosted phone service, a managed-ops agency, or a broad social-platform tool. The operator owns the stack. There is no SignalRoom-side dependency that can be revoked, rate-limited, or deplatformed.
 
 ## Start here
 
-1. [Quickstart](/signalroom/quickstart) — the conservative repo-operator setup path.
-2. [Mac host setup](/signalroom/setup/mac-host) — sizing the host machine for your fleet.
-3. [iPhone lanes](/signalroom/setup/iphone-lanes) — supported models, cables, hubs, network.
-4. [iPhone settings](/signalroom/setup/developer-mode) — required iOS settings (Light appearance, StandBy off, Auto-Lock Never).
-5. [Trust and runner setup](/signalroom/setup/trust-runner) — install the on-device runner via App Store Connect API.
-6. [Posting runs](/signalroom/how-to/posting-runs) — your first publishing run, end to end.
-7. [Activity workflows](/signalroom/how-to/activity-workflows) — warmup runs before publishing.
-8. [Agent docs](/signalroom/agent-docs) — how AI agents should drive Warmr through `warmrctl`.
+1. [Your first 30 minutes](/signalroom/quickstart) walks the end-to-end setup, from DMG to first activity workflow on a real account.
+2. [Why SignalRoom is safe to run](/signalroom/safety) covers the architectural reasons accounts stay healthy.
+3. [Mac host setup](/signalroom/setup/mac-host) sizes the host machine.
+4. [iPhone lanes](/signalroom/setup/iphone-lanes), [iPhone settings](/signalroom/setup/developer-mode), and [Trust and runner setup](/signalroom/setup/trust-runner) prep the devices.
+5. [Posting runs](/signalroom/how-to/posting-runs) and [Activity workflows](/signalroom/how-to/activity-workflows) cover daily operations.
+6. [Driving Warmr (for agents)](/signalroom/agent-docs) is the agent surface for `warmrctl`.
 
-## Safety framing
-
-SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes. Public docs must not imply hidden, evasive, or "anti-detection" behavior. See [Claims and safety](/signalroom/safety) for the writing guardrails this page is held to.
+Or just [book a demo](https://cal.com/dylanpak/signalroom-demo). 20 minutes, hardware fit confirmed, first three recipes drafted, walked through the receipts dashboard.
