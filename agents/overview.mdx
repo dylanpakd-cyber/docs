@@ -1,30 +1,64 @@
 ---
-title: Agent overview
-description: Repo-native orientation for agents working on Warmr and SignalRoom docs.
+title: Repo rules for agents
+description: Orientation page for AI agents working inside the Warmr private repo. Read this and the linked pages before editing any file.
 ---
 
-# Agent overview
+# Repo rules for agents
 
-Status: Current repo-native docs entry point.
+> ## ⚠ Read this first
+>
+> **These pages are for AI agents editing files inside the private Warmr repo — not for agents using SignalRoom.**
+>
+> If you got here because someone said "Claude, drive my morning posting run" or "GPT, check whether Lane 2 finished" — **you're in the wrong section**. Go to [Driving Warmr (for agents)](/signalroom/agent-docs) instead. That page covers `warmrctl` usage, pre-flight, action commands, and recovery. Nothing here applies to live operations.
+>
+> **Stop here if any of the following are true:**
+>
+> - You are not editing files in `github.com/dylanpakd-cyber/warmr` (the private app repo).
+> - You were not given an explicit task scope by the repo operator.
+> - You are working in the canonical checkout instead of a fresh worktree (see [Worktree protocol](/agents/worktree-protocol)).
+>
+> **The cost of getting this wrong is real.** Warmr is a live product running on operator hardware. Bad edits to app code, signing certs, release artifacts, or CI configuration can break posting runs in production, invalidate signed builds, or hand operators a broken update. Read these rules before any file edit. When unsure, stop and ask.
 
-SignalRoom is the public-facing name and landing layer. Warmr is the app, repo, and control-plane implementation. Agents should preserve that relationship in code, docs, and product language.
+Status: Current repo-native rules. The Warmr repo files (`STATUS.md`, `CLAUDE.md`, `AGENTS.md`, `CONTEXT.md`) are the source of truth and override anything here on conflict.
+
+SignalRoom is the public product name. Warmr is the macOS app + control-plane repo that powers it. These rules govern how AI agents work inside the Warmr repo — what to read first, where to make changes, what to commit, what to leave alone.
 
 ## Source order
 
-Current:
+Read in this order before changing anything in the Warmr repo:
 
-1. `STATUS.md` for current state.
-2. `CLAUDE.md` for Claude and worktree protocol.
-3. `AGENTS.md` for Codex and repo rules.
-4. `CONTEXT.md` for domain language.
+1. `STATUS.md` — current state, what's shipped, what's in flight.
+2. `CLAUDE.md` — Claude-specific protocol and the worktree workflow.
+3. `AGENTS.md` — Codex / other-agent protocol and repo rules.
+4. `CONTEXT.md` — the project's domain language.
 5. Existing docs under `docs/agents`, `docs/plans`, `docs/prd`, `docs/release`, `docs/adr`, and `docs/handoffs`.
+
+If you can't read those, **you can't work in the Warmr repo**. The public-facing docs (this site) are a curated mirror, not a substitute.
 
 ## Work style
 
-Current:
+- **Inspect before changing.** Read the file, run a freshness check, understand the surrounding code or copy.
+- **Prefer small docs and code changes** with clear, runnable verification.
+- **Do not assume unfinished features are current.** Anything labeled In progress or Planned is not shipped.
+- **Use Current, In progress, and Planned labels** in repo docs to mirror this discipline.
+- **Keep Mintlify as a mirror** of curated repo-native docs, not the source of truth.
 
-- Inspect before changing.
-- Prefer small docs and code changes with clear verification.
-- Do not assume unfinished features are current.
-- Use Current, In progress, and Planned labels in docs.
-- Keep Mintlify as a mirror of curated repo-native docs, not the source of truth.
+## Audience boundary
+
+This section answers "I'm editing Warmr's source — what are the rules?"
+
+If your question is one of:
+
+- "How do I use SignalRoom?" → [SignalRoom product overview](/signalroom/index).
+- "How do I set it up?" → [Your first 30 minutes](/signalroom/quickstart).
+- "How do I drive Warmr via `warmrctl`?" → [Driving Warmr (for agents)](/signalroom/agent-docs).
+- "What command does X?" → [warmrctl reference](/signalroom/reference/warmrctl) or [Control-plane reference](/reference/control-plane).
+
+…then you don't need any of the rest of this section. The pages below are for repo work specifically.
+
+## Continue reading
+
+- [Repo rules](/agents/repo-rules) — required read order, safety rules, reporting rules.
+- [Worktree protocol](/agents/worktree-protocol) — fresh-worktree workflow, freshness gates, canonical-checkout policy.
+- [Safe agent actions](/agents/safe-agent-actions) — what you can do without escalation.
+- [Forbidden agent actions](/agents/forbidden-actions) — what you must not do, and the cost of doing it anyway.

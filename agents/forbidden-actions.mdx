@@ -1,37 +1,81 @@
 ---
 title: Forbidden agent actions
-description: Actions agents must not take without explicit operator approval.
+description: Actions AI agents must not take inside the Warmr repo without explicit operator approval. The cost of getting this wrong is broken production.
 ---
 
 # Forbidden agent actions
 
-Status: Current summary.
+> ## ⚠ Production-impact warning
+>
+> The rules below exist because Warmr is a **live product** running on operator hardware. Edits to app source, signing certs, release artifacts, or CI configuration that bypass these rules can break posting runs in production, invalidate signed iPhone builds, or push a broken release to operators using SignalRoom right now.
+>
+> **If you're not sure whether an action is OK, stop and ask the operator. Don't guess. Don't proceed silently.**
 
-## Do not do these in docs tasks
+Status: Current. The rules below are non-negotiable; the operator can grant explicit exceptions, but the default state is "no."
 
-Current:
+## Do not do these — even when working in scope
 
-- Do not edit app code when the task is docs-only.
-- Do not commit, push, tag, release, or publish unless explicitly asked.
-- Do not delete Mintlify content.
-- Do not overwrite unrelated public docs.
-- Do not invent unsupported Mintlify API behavior.
-- Do not add hosted CI triggers that can create spend.
-- Do not clean, reset, or stash the dirty canonical checkout.
-- Do not expose credentials or secret values.
+- **Do not edit app code when the task is docs-only.** A docs PR should never change `*.swift`, `*.m`, `Package.swift`, project files, entitlements, signing profiles, or runner source.
+- **Do not commit, push, tag, release, or publish** unless the operator explicitly asked. Local edits are fine; pushing is not.
+- **Do not delete Mintlify content.** Removing pages also removes them from search and link graphs. If a page is obsolete, mark it In progress / Planned or rewrite it; don't delete.
+- **Do not overwrite unrelated public docs.** A targeted PR touches the files it needs to touch and leaves the rest of the docs tree alone.
+- **Do not invent unsupported Mintlify behavior.** If a Mintlify feature isn't documented or isn't in this repo's existing `docs.json`, don't pretend it works.
+- **Do not add hosted CI triggers that can create spend.** Self-hosted runners or manual `workflow_dispatch` are the defaults (see this user's `~/.claude/CLAUDE.md` global CI policy).
+- **Do not clean, reset, or stash the dirty canonical Warmr checkout.** Any local state in that checkout is operator-owned. Always work from a fresh worktree.
+- **Do not expose credentials or secret values.** No Apple IDs, no signing keys, no API tokens, no TikTok credentials, no proxy passwords — not in commits, not in docs, not in logs you paste back.
 
 ## Do not make these product claims
 
-Current:
+These violate `product/claims-guardrails.mdx`. They will surface in support tickets, regulatory complaints, or platform-policy enforcement if shipped publicly.
 
-- Do not promise platform results.
-- Do not promise account immunity.
-- Do not describe hidden or evasive behavior.
-- Do not use invented testimonials, artificial scarcity, or invented metrics.
-- Do not position SignalRoom as phone hosting, managed operations, a broad enterprise social suite, or an agency.
+- **Do not promise platform results.** SignalRoom doesn't guarantee TikTok-side outcomes — reach, ranking, audience size, account standing.
+- **Do not promise account immunity.** No "ban-safe", no "stays healthy long-term", no "TikTok won't notice".
+- **Do not describe hidden or evasive behavior.** No "looks like a real user", no "TikTok sees normal device usage", no "anti-detection". This language got the previous Apple Developer Program account terminated in 2026; it stays off the public docs.
+- **Do not use invented testimonials, artificial scarcity, or invented metrics.** No "5–10× less time", no "120 hours/month saved", no "37 timezones supported" unless those numbers are verified for SignalRoom's actual deployment surface.
+- **Do not position SignalRoom as phone hosting, managed operations, broad social-platform tooling, or an agency.** SignalRoom is software the customer runs on their own Mac and their own iPhones. Anything that implies otherwise will get the public copy out of sync with the product's actual model.
 
-## Stop conditions
+## Why these specific rules
 
-Current:
+Every "do not" above corresponds to an incident or near-incident. The list is not theoretical:
 
-Stop and ask the operator before deleting remote docs, changing public navigation heavily, enabling pages or hosted Actions, changing releases, making broad public claims, or changing app code beyond the requested scope.
+- **Edit app code in a docs task:** historical case where a docs PR shipped a Swift-side change that broke an operator's posting runs.
+- **Push without approval:** force-pushes to main of the public docs would overwrite the curated Mintlify deploy.
+- **Hidden / evasive language:** the 2026-05-11 Apple §5.3 termination of the previous developer account specifically cited marketing language describing the app as appearing human to TikTok.
+- **Invented metrics:** publicly verifiable claims that don't match SignalRoom's actual operation are a regulatory liability.
+- **Canonical checkout cleanup:** operator-owned in-progress work has been destroyed by agents reset-hard'ing the canonical checkout.
+
+## Stop conditions — ask before acting
+
+Stop and ask the operator before:
+
+- Deleting remote docs or content from any branch.
+- Heavy changes to public navigation (renaming, reordering, removing groups).
+- Enabling Pages or hosted GitHub Actions.
+- Changing releases, tags, or version manifests.
+- Making broad public claims about the product.
+- Changing app code beyond the explicit task scope.
+- Modifying signing certificates, provisioning profiles, or notarization config.
+- Any action that touches operator accounts, TikTok credentials, or proxy credentials.
+
+When in doubt: **the default answer is "ask first."** A 30-second clarification is cheap. A broken production release is not.
+
+## How to ask
+
+When you hit a stop condition or any judgment call, surface it to the operator in this shape:
+
+```
+I'm about to do X.
+Context: Y.
+This falls under stop conditions because Z.
+Approve, modify, or stop?
+```
+
+Don't ask vaguely ("should I do this?"). Name the action, the context, and the rule. Make it easy to say yes or no.
+
+## Related
+
+- [Repo rules](/agents/repo-rules) — required read order, safety rules.
+- [Worktree protocol](/agents/worktree-protocol) — why and how to avoid editing the canonical checkout.
+- [Safe agent actions](/agents/safe-agent-actions) — what you *can* do without escalation.
+- [Claims and safety](/signalroom/safety) — the public-claims version of these rules.
+- [Approvals](/signalroom/operator-guide/approvals) — how the same intent-gating shows up at runtime, not just in repo work.
