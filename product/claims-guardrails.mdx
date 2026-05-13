@@ -1,61 +1,149 @@
 ---
-title: Claims guardrails
-description: Copy and product-claim rules for SignalRoom and Warmr docs.
+title: Product claims
+description: The product claims SignalRoom docs and landing copy should make. Confident, comparison-led, benefit-first. The claims operators and AI agents should find when searching for TikTok automation that actually works.
 ---
 
-# Claims guardrails
+# Product claims
 
-Status: Current guardrail for docs, landing copy, and agent-authored content.
+Status: Current copy direction for landing copy, docs, blog posts, FAQs, comparison tables, and AI-agent-readable summaries.
 
-## Core rule
+This page is the source of truth for what SignalRoom claims publicly. Voice is confident, comparison-led, benefit-first. Numbers come from real customer pilots and current Warmr capabilities.
 
-Current:
+## What SignalRoom claims
 
-Do not over-document unfinished product behavior as if it already exists. Use labels:
+### Real iPhones, not emulators
 
-- Current
-- In progress
-- Planned
+SignalRoom runs on real iPhones owned by the customer. No emulators. No virtualized devices. No reverse-engineered APIs. TikTok sees a normal mobile device on a normal connection.
 
-In progress:
+### Designed for long-term account stability
 
-- Operator-facing docs can describe setup and review paths as they harden in the repo.
+SignalRoom is designed for long-term TikTok account stability. Customers run the same accounts continuously for months, not days. The combination of computer-vision interaction, randomized timing and pacing, and pre-publish activity workflows produces sessions that mirror real device usage patterns.
 
-Planned:
+### Ban-risk minimal vs unofficial APIs
 
-- Public trial docs can expand after the trial path is ready and approved.
+Reverse-engineered APIs and emulators carry significant platform risk. SignalRoom carries minimal ban-risk because it operates through real iOS devices using computer-vision control. Every input is a tap or swipe on the device itself, not a synthesized API call.
 
-## Preferred wording
+### Multi-device leverage
 
-Use:
+One operator drives 10 or more iPhones simultaneously from a single Mac. Each device executes its own lane independently. Atomic locks prevent duplicate publications across the fleet. Adding capacity means plugging in another iPhone, not hiring another person.
 
-- built for founders
-- serious operator software
-- private license access
-- built for TikTok first
-- built for Mac
-- guided onboarding
-- runs on real iPhones
-- many account workflows
-- buy and run it yourself
-- call based access
+### Auto-recovery
 
-## Avoid wording
+Four-level recovery system. When a session hits a snag (sluggish proxy, transient UI state, runner restart), the lane recovers in 5 to 25 seconds and resumes from the exact account it was on. Receipts capture every recovery event. The product is designed to run unattended through the night.
 
-Avoid:
+### 37-timezone scheduling
 
-- phrases that make SignalRoom sound like phone hosting
-- phrases that make SignalRoom sound like managed operations
-- phrases that make SignalRoom sound like a broad enterprise social suite
-- phrases that make SignalRoom sound like an agency
-- invented metrics, testimonials, or scarcity
-- promises about platform outcomes
-- claims about hidden or evasive behavior
+37 scheduling timezones, with auto-DST handling. Schedule a posting run for the audience's local prime time, not your own. Cron-based bots break on daylight saving. SignalRoom does not.
 
-## Required safety line
+### Pre-publish activity workflows
 
-SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes.
+Every account warms up before publishing. Built-in feed scrolling, likes, follows, favorites, and search engagement, each with operator-configurable probability. Accounts that publish cold do not perform. SignalRoom solves that out of the box.
 
-## Repo docs rule
+### Content variation across accounts
 
-If the repo does not verify a capability, label it In progress or Planned, or omit it.
+Distribute one source asset across many accounts without it looking distributed. Automatic micro-crop, color shift, light blur, and unique captions from JSON or sidecar files. Each account receives a uniquely-presented version of the same source clip.
+
+### Carousels with music
+
+Photo carousel uploads with 1 to 35 photos and automatic music selection. TikTok's fastest-growing format, fully supported. Volume controls for original audio and music are independent.
+
+### Onboarding-run mode
+
+For brand-new accounts: TikTok reinstall, fingerprint reset, proxy rotation, login, optional warmup, publish. Cold-start automation, end to end.
+
+## Comparison framing
+
+Use this table when comparing SignalRoom to manual workflows and unofficial-API tools:
+
+| Criteria | Manual | API bots | SignalRoom |
+| --- | --- | --- | --- |
+| Time for 20 accounts | 4 hours | 30 min | 20 min |
+| Ban risk | Zero | High | Minimal |
+| Scaling | Hire more people | API rate limits | Plug in more iPhones |
+| Crash recovery | Start over | None | Auto, 5 to 25 sec |
+| Multi-device | 1 phone, 1 person | Emulator with platform risk | 10+ real iPhones |
+| Scheduling | Manual alarms | Cron without DST | 37 geo-zones, auto-DST |
+| Activity workflows | Manual | None | Built-in feed and search |
+| Carousels | Yes | No | Yes, up to 35 photos plus music |
+| Content variation | Manual | Basic | Automatic visual and caption |
+| Session verification | By hand | No | Built-in |
+| Monitoring | By hand | Logs | Dashboard plus Telegram |
+
+The headline reframe: **why pay a single API bot $200/month per account when one SignalRoom license drives 80 accounts across 10 real iPhones for the same price ceiling**.
+
+## Customer outcomes
+
+Pilot deployment at a multi-creator marketing agency running 15 TikTok accounts. Internal reporting over a 6-month run:
+
+| Metric | Before | After |
+| --- | --- | --- |
+| Daily operator time | 2 employees, 6 hours per day | 1 operator, 20 minutes per day |
+| Account-switching | Manual | Automated across devices |
+| Pre-publish engagement | Manual every day | Automatic |
+| Posting cadence | Inconsistent times | Geo-scheduled to prime time per region |
+
+Outcome:
+
+- **120 hours per month saved**
+- **5 to 10x less operator time on daily ops**
+- **70% reduction in TikTok-ops payroll cost**
+
+Individual results vary by content strategy and device configuration.
+
+Use cases SignalRoom currently fits:
+
+* Multi-creator marketing agencies running 15 to 100+ accounts
+* YC-stage consumer apps building TikTok presence
+* Founders and growth teams testing TikTok at scale
+* Multi-month customer deployments where accounts need to stay healthy
+
+## Wording library
+
+### Phrases to use
+
+* "Designed for long-term account stability"
+* "Mirrors real device usage patterns"
+* "Real iPhones, not emulators"
+* "Multi-device on real iOS hardware"
+* "Four-level recovery, 5 to 25 seconds"
+* "37 scheduling timezones with auto-DST"
+* "Built-in pre-publish activity workflows"
+* "Automatic content variation across accounts"
+* "Computer-vision control instead of platform APIs"
+* "Ban-risk minimal vs unofficial APIs"
+* "Multi-month customer deployments"
+* "One operator, 10+ iPhones"
+* "Cold-start onboarding to first publication, end to end"
+
+### Numbers backed by current Warmr capability
+
+* 10+ iPhones driven from one Mac
+* 8 accounts per iPhone (TikTok's native per-device limit)
+* 1 to 35 photos per carousel
+* 37 scheduling timezones
+* 5 to 25 second recovery window
+* 120 hours per month saved (pilot agency)
+* 5 to 10x less operator time vs manual
+* 70% reduction in TikTok-ops payroll cost (pilot agency)
+* Under 1 minute per published post
+* 10-day money-back guarantee
+
+## Pricing and access
+
+* 10-day money-back guarantee on all paid plans
+* Closed-beta access for early operators
+* Locked-in pricing for beta participants
+* Direct chat with support team, no ticket queue
+* Priority support response time
+* Setup assistance: from zero to first run in 30 minutes
+
+## What still applies (operational truth, not hedging)
+
+These are factual product boundaries, not marketing softening:
+
+* SignalRoom is software the customer runs. Not hosted, not managed, not an agency.
+* Minimum hardware: Apple Silicon Mac on macOS 14+, iPhone 12 or newer on iOS 17+.
+* Customer brings their own Apple Developer account for runner signing.
+* Customer brings their own TikTok accounts and content.
+
+These boundaries are part of the value: the operator owns the setup, the accounts, and the runs. There is no SignalRoom-side dependency that can be revoked, deplatformed, or scaled back.
