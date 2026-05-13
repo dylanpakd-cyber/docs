@@ -1,58 +1,202 @@
 ---
 title: Failure recovery
-description: Conservative failure recovery rules for operators and agents.
+description: How recovery is layered, what each error class means, and a decision tree for "the thread errored — what do I do?"
 ---
 
 # Failure recovery
 
-Status: In progress.
+Status: Current operator decision tree for the failure modes we see today. New error classes get added here as the runner reports them.
 
-Failure recovery should bias toward inspection, logs, and small controlled steps. Do not mask a device, runner, or account-state problem with repeated action attempts.
+When a thread errors or a lane wedges, the cost of guessing is usually wasted minutes — sometimes wasted accounts. This page walks the decision tree. Read the error class, find it in the table, follow the steps. Don't `app restart` your way out of an error you haven't classified.
 
-## Current first checks
+## Recovery is layered
 
-Current:
+Recovery happens in four layers, from most local to most disruptive. Each layer is attempted by Warmr automatically before escalating to the next.
 
-1. Check app and schema state:
-
-```bash
-warmrctl status
+```
+Layer 1  ──  Step retry inside the runner
+              (per-action timeout, single retry)
+              Cost: 1–5 sec
+                    │
+                    ▼
+Layer 2  ──  Runner restart on the iPhone
+              Kills + relaunches RodmanRunner
+              Cost: 5–15 sec, in-flight publication state may be lost
+                    │
+                    ▼
+Layer 3  ──  Lane reconnect from the Mac
+              Re-binds port, re-establishes bridge
+              Cost: 15–30 sec, in-flight publication state usually lost
+                    │
+                    ▼
+Layer 4  ──  app.restart (LAST RESORT)
+              Kills Warmr.app entirely, restarts
+              Cost: 30–60 sec + interrupts ALL lanes on the host
 ```
 
-2. Check device lanes:
+Operators and agents intervene **between layers 2 and 3**, when automatic recovery has tried what it can but the result isn't getting better. Layer 4 should be operator-initiated only.
 
-```bash
-warmrctl devices list
+## Error classes — recognize before reacting
+
+Warmr surfaces errors as domain codes in the response frame plus a free-form `errorMessage` on the thread. Recognize the class first:
+
+| Error class | What it means | What to do |
+| --- | --- | --- |
+| `duplicate run rejected` | Another thread is already running on this configuration | Check `thread list`; either wait for the existing one or pick a different configuration |
+| `device not found` | The lane this thread targeted isn't visible right now | Check `devices list`; replug, confirm trust, re-flight |
+| `template not found` | The template was deleted or renamed mid-run | Re-create or re-link the template; restart the configuration |
+| `configuration not found` | Thread configuration deleted | Re-create the configuration; if intentional, no action needed |
+| `orchestrator unavailable` | Warmr's internal coordinator can't be reached | Wait 30 seconds; if persistent, `app restart` (layer 4) |
+| `upload folder unavailable` | Path in the template doesn't resolve | Check the template's video/photo folder path; mount the volume if it's external |
+| `port allocation exhausted` | Too many lanes assigned to ports | `app restart`; investigate why ports are leaking |
+| `evidence export failed` | Disk full, permissions, or path conflict | Free disk space; check Warmr has write access to its app support dir |
+| `lifecycle not supported` | `app.start/stop/restart` requested in a state that doesn't allow it | Check current app state with `status`; usually transient |
+| `automation disabled` | Automation toggle is off in Warmr.app | Flip it on (this is operator-side, not agent-side) |
+| (no domain code, just `errorMessage`) | Runner-level error, see message + logs | Use the decision tree below |
+
+The full list of currently-known domain errors is in [Control-plane reference → Error codes](/reference/control-plane#error-codes).
+
+## "The thread errored" decision tree
+
+```
+                       Thread shows status=error
+                                │
+                                ▼
+              Is there a domain error code in the response?
+                       │                       │
+                      yes                     no
+                       │                       │
+                       ▼                       ▼
+            Match it in the table         Look at the last 20-60 sec
+            above; follow the row         of logs for the thread
+                       │                       │
+                       ▼                       ▼
+                  Action                  Recognizable pattern?
+                                              │           │
+                                             yes         no
+                                              │           │
+                                              ▼           ▼
+                                       Recovery       Capture evidence,
+                                       playbook       stop the thread,
+                                       below          surface to support
 ```
 
-3. Check active or recent threads:
+## Recovery playbooks
 
-```bash
-warmrctl thread list
-```
+### "Lane disconnected mid-run"
 
-4. Review logs:
+Symptom: `errorMessage` says device not found / lane connection lost; `devices list` shows `isConnected: false` for the lane that was running.
 
-```bash
-warmrctl logs --follow
-```
+Steps:
 
-5. Export minimal evidence if needed:
+1. **Don't restart the app.** A single lane drop doesn't justify interrupting other lanes.
+2. Replug the USB cable on that iPhone.
+3. Confirm the iPhone is unlocked and trust the Mac if iOS re-prompts.
+4. `warmrctl --json devices list` — confirm `isConnected: true` returns for the lane.
+5. Restart the thread for that configuration.
+6. If it disconnects again within minutes, the cable is the most likely culprit. Swap to an Apple-original or MFi cable, ideally on a powered USB hub.
 
-```bash
-warmrctl evidence export
-```
+### "Wedged lane — runner running but nothing's happening"
 
-## Recovery stance
+Symptom: `thread list` shows status `running` but no log lines for 60+ seconds; iPhone screen is on but TikTok is idle or stuck.
 
-Current:
+This is layer 2/3 territory — automatic restart should already have tried. If it's still wedged:
 
-- Stop if the lane is not clearly ready.
-- Do not run multiple owners against the same phone.
-- Prefer evidence and handoff notes over repeated retries.
-- Keep repo changes separate from operator recovery unless a bug is clearly identified.
+1. **Capture evidence first** — `warmrctl --json thread list > /tmp/wedge.json` and a 60-second `warmrctl --json logs --follow --configuration-id <ID>` snapshot.
+2. `warmrctl thread stop --configuration-id <ID>`. Wait for status to flip to `stopped` or `error`.
+3. If stop returns success but the lane still looks wedged, check whether `rodmanInstalledVersion` is still non-null. If it's gone null, the runner died — re-install from Warmr's Devices page.
+4. Replug the iPhone.
+5. Restart the thread.
+6. If the wedge reproduces consistently on this account or this configuration, **the problem is upstream of Warmr** — likely a TikTok-side state on that account (captcha, login challenge, ban screen). Look at the iPhone screen.
 
-Planned:
+### "Automation disabled"
 
-- Decision trees for disconnected phone, runner unavailable, port conflict, action rejected, and unexpected app state.
-- A support-ready receipt format.
+Symptom: response shows `automation disabled` domain error.
+
+1. Operator-side: open Warmr.app, find the Automation Enabled toggle (usually top-right or in Settings), turn it on.
+2. Retry the action.
+
+That's the whole playbook. Agents should report and stop, not try to enable automation programmatically — see [Approvals](/signalroom/operator-guide/approvals).
+
+### "Publications stuck in 'Posting…'"
+
+Symptom: thread completes, but checking the TikTok app shows the post never made it to the feed — it sits in "Posting…" indefinitely.
+
+Cause: the **Wait after publish** value on the template was too small. TikTok is still uploading in the background after Post is tapped; the runner moved on before the upload finished.
+
+Steps:
+
+1. Don't intervene in TikTok on the iPhone. Sometimes it eventually finishes; sometimes it timeouts. Watching it doesn't help.
+2. Edit the template: **Wait after publish** to at least **360** for normal videos, **480–600** for large files or slow proxies.
+3. Future runs will be fine. The stuck publication may need to be cancelled manually in TikTok and re-attempted, or just left to time out.
+
+### "Carousel uses the wrong photos"
+
+Symptom: a carousel run picks up some photos from before the run started in addition to the intended ones.
+
+Cause: the iPhone's photo gallery had pre-existing photos; the runner's gallery selector grabbed those alongside the new ones.
+
+Steps:
+
+1. Stop the thread.
+2. Edit the template: **Gallery → Clear before upload → On**. (For carousels specifically; we strongly recommend this on by default.)
+3. Restart the thread.
+
+### "One file went to multiple devices"
+
+Symptom: the same video appeared in TikTok from two different iPhones in a multi-device run.
+
+Cause: `.publish_history.json` was deleted or out of sync. This file is the cross-device claim ledger in the content folder.
+
+Steps:
+
+1. Don't delete `.publish_history.json` manually — let Warmr rebuild it on next run.
+2. Confirm every device in the thread points at the **same** content folder. Different folder paths = no shared ledger.
+3. If you genuinely want to re-publish content, move it to a fresh folder rather than deleting the history file.
+
+### "Errors I don't recognize"
+
+If none of the above match:
+
+1. Capture state: `thread list`, last ~60 seconds of logs (filtered to the failing configuration), `evidence export`.
+2. **Stop the thread.**
+3. Surface the bundle to support. The bundle contains everything we'd ask for in a support ticket.
+
+Don't loop on retries. Most error classes don't fix themselves on the second try.
+
+## Layer 4 — when `app restart` is the right answer
+
+`warmrctl app restart` should be a deliberate choice, not a reflex:
+
+- **OK to use:** orchestrator clearly unresponsive (`orchestrator unavailable` for multiple minutes), Warmr.app frozen UI, port allocation seems stuck.
+- **Not OK:** a single lane errored, a single thread failed, an account looks weird. None of those justify killing every other lane on the host.
+
+Before `app restart`:
+
+- [ ] Stop in-flight threads (`thread stop`) so they error cleanly rather than getting cut off.
+- [ ] Capture an evidence bundle.
+- [ ] Note the timestamp — it's easier to correlate logs later if you know when the restart happened.
+
+After `app restart`:
+
+- All lanes drop. Re-run pre-flight: `status`, `devices list`, `thread list`.
+- Threads do **not** auto-resume. You restart them.
+
+## Recovery anti-patterns
+
+| Don't | Do | Why |
+| --- | --- | --- |
+| `app restart` whenever a thread errors | Identify the error class first | One bad lane shouldn't kill 9 others. |
+| Delete `.publish_history.json` to "fix" a publish loop | Let Warmr rebuild it; check folder paths across lanes | The ledger is the only thing protecting you from duplicate uploads. |
+| Re-run `thread start` repeatedly when it returns `automation disabled` | Surface to operator; stop | Automation is gated on purpose. |
+| Replace cables one at a time during a multi-device session | Stop the whole session, swap, re-flight | Mid-session replacements compound state. |
+| Manually intervene in TikTok on the iPhone while a thread is running | Stop the thread first | Touching the iPhone during a run produces inconsistent state in both Warmr and TikTok. |
+| Treat `evidence export` failures as urgent | Free disk, retry | Evidence export is post-run audit — the run already happened. |
+
+## Related
+
+- [Logs and receipts](/signalroom/operator-guide/logs-and-receipts) — capturing the artifacts you need before you intervene.
+- [Approvals](/signalroom/operator-guide/approvals) — why some actions are gated and what to do when they're refused.
+- [Device lanes](/signalroom/operator-guide/device-lanes) — recovering from a wedged lane.
+- [Control-plane reference → Error codes](/reference/control-plane#error-codes) — the full domain-error list.
+- [Agent docs → Failure recovery](/signalroom/agent-docs#failure-recovery) — the same decision tree from an agent's perspective.

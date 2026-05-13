@@ -1,52 +1,121 @@
 ---
 title: Device lanes
-description: Operator model for real iPhone lanes.
+description: What a device lane is, how Warmr models it, how lane ownership and readiness work, and how to scale past one lane.
 ---
 
 # Device lanes
 
-Status: Current architecture plus in-progress operator workflow.
+Status: Current concept reference.
 
-A device lane is one physical iPhone that Warmr can observe and control from the Mac host.
+A **device lane** is one physical iPhone connected over USB to the Mac host. The lane is the unit of work in SignalRoom: every thread runs on one or more lanes, every account is published from one lane at a time, every receipt is tied to a lane.
 
-## Current fields
+This page is the concept page. For hardware specs and the iPhone-side checklist, see [iPhone lanes (setup)](/signalroom/setup/iphone-lanes). For the field schema, see [Device state model](/reference/device-state-model).
 
-Current device state exposed by the control schema includes:
+## One iPhone, one lane, one runner
 
-- `udid`
-- `displayName`
-- `modelName`
-- `iosVersion`
-- `isConnected`
-- `assignedPort`
-- `rodmanInstalledVersion`
+The model is intentionally simple:
 
-Use:
-
-```bash
-warmrctl devices list
+```
+  iPhone (UDID)  ─USB─►  Mac host (Warmr.app)  ─►  one assigned port  ─►  RodmanRunner on the iPhone
+       │                                                                       │
+       └──────────────────────── one lane ─────────────────────────────────────┘
 ```
 
-or:
+A lane has:
 
-```bash
-warmrctl --json devices list
-```
+- **One UDID** — the iPhone's stable identifier. Display names can change, UDIDs don't.
+- **One assigned port** — when Warmr binds the lane, it allocates a local TCP port for the runner bridge. Per-device lane stride keeps multiple lanes' ports from colliding.
+- **One owner** — exactly one Warmr instance owns the lane at any moment. Running two Warmr instances against the same iPhone produces a wedged lane that requires intervention.
+- **One runner** — RodmanRunner is the on-device test runner. The lane is "real" once the runner is installed and the developer profile is trusted.
 
-## Operating rule
+## Lane state fields
 
-Current:
+Pulled from `warmrctl --json devices list`:
 
-- Treat each iPhone lane as single-owner at runtime.
-- Do not run competing tools against the same lane while Warmr owns it.
-- Start with read-only status before any action command.
+| Field | What it tells you |
+| --- | --- |
+| `udid` | Stable iPhone identifier. Always key scripts on this. |
+| `displayName` | Human-readable name ("Lane 2 — Kody"). For dashboards, not for filtering. |
+| `modelName` | "iPhone 13", "iPhone 14 Pro Max", etc. |
+| `iosVersion` | iOS version string. |
+| `isConnected` | Whether the device is currently visible over USB. |
+| `assignedPort` | Local port allocated for this lane. Useful when debugging port collisions. |
+| `rodmanInstalledVersion` | Runner version installed on the iPhone, or `null` if not installed. |
 
-In progress:
+`isConnected: true` only means USB visibility — it does **not** mean ready-to-run. Readiness is a separate check (next section).
 
-- Human-readable lane status labels for operator review.
-- Readiness checks that combine device, runner, account, and cooldown context.
+## Lane readiness
 
-Planned:
+Five conditions must hold for a lane to start a thread cleanly:
 
-- Lane assignment docs for customer-owned phone setups.
-- Clear recovery steps for offline, busy, or runner-missing lanes.
+1. **Connected** (`isConnected: true`) — the iPhone is visible over USB to Warmr.
+2. **Trusted** — the "Trust This Computer?" prompt has been confirmed on the iPhone for this Mac.
+3. **Developer Mode on** + **iPhone settings configured** — Light appearance, StandBy off, Auto-Lock Never, etc. See [iPhone settings](/signalroom/setup/developer-mode).
+4. **Runner installed** (`rodmanInstalledVersion` non-null) — RodmanRunner is signed onto the iPhone and the developer profile is trusted.
+5. **Not owned by another Warmr instance** — only one Warmr can drive a given iPhone at a time.
+
+If any one of these fails, threads on the lane fail with predictable error classes — see [Failure recovery](/signalroom/operator-guide/failure-recovery).
+
+There isn't a single `isReady` field yet (**In progress**) — for now, operators infer readiness from `isConnected` + `rodmanInstalledVersion` + a successful no-op test thread.
+
+## Lane ownership and collisions
+
+Lane ownership is **process-scoped**, not user-scoped:
+
+- Two Warmr.app instances on the **same Mac** can't both own the same iPhone. The second instance's `devices.list` will show the device as `isConnected: false` even when it's physically plugged in.
+- Two Macs trying to drive the same iPhone simultaneously will both fail intermittently — Apple's USB stack doesn't multiplex. Don't do this.
+- Xcode, iTunes, Finder's iPhone view, and Apple Configurator can also temporarily claim the iPhone. If a lane drops to `isConnected: false` mid-session and the cable is fine, check whether one of those is open and close it.
+
+Recovery from a wedged lane: stop the affected thread, close any competing app, replug the cable, and re-run pre-flight. As a last resort, `warmrctl app restart` clears the entire Warmr-side state — but that interrupts every other lane on the host. See [Failure recovery](/signalroom/operator-guide/failure-recovery).
+
+## Multi-lane fleets
+
+The fleet sizing math from [Mac host setup](/signalroom/setup/mac-host):
+
+| Mac | Lanes | Notes |
+| --- | --- | --- |
+| M1 / M2 / M4, 16 GB RAM | 1–3 | Direct USB; no hub needed |
+| M2 Pro / M4 Pro, 24 GB RAM | 4–5 | One powered hub helps |
+| M2 Pro / M4 Pro, 32 GB RAM | 6–10 | Powered hub required |
+| M4 Pro / Max, 48–64 GB RAM | 10+ | Multiple powered hubs, 6–8 devices per hub |
+
+Per-lane resource cost: roughly one CPU core's worth of recognition + a few hundred MB of RAM during active sessions. The Neural Engine on Apple Silicon does the heavy lifting for screen recognition, which is why Apple Silicon Macs run many more lanes than Intel Macs (Intel isn't supported).
+
+## Adding a lane to an active host
+
+The standard flow:
+
+1. Plug the new iPhone in. Run through [iPhone settings](/signalroom/setup/developer-mode).
+2. Open Warmr's **Devices** page. Confirm the device appears as connected.
+3. Install the runner ([Trust and runner setup](/signalroom/setup/trust-runner)) — Path A (ASC API) installs on multiple devices in parallel; Path B (Xcode) is one device at a time.
+4. Trust the developer profile on the iPhone.
+5. The new lane is now selectable in any thread configuration.
+
+You don't need to restart Warmr.app to add a lane. Threads that were already running stay running.
+
+## Removing a lane
+
+1. Stop any threads currently using the lane (`warmrctl thread stop --configuration-id <ID>`).
+2. Unplug the iPhone — `isConnected` flips to `false`.
+3. The lane drops out of all thread configurations that reference it on next run, but the device row stays in `devices.list` (with `isConnected: false`) until you explicitly remove it from the Devices page.
+
+Leaving a disconnected lane in the device list is fine if you'll re-attach the iPhone later. Per-account state stays intact.
+
+## Common lane problems
+
+| Symptom | Cause | Where to look |
+| --- | --- | --- |
+| Device shows in Devices page but `isConnected: false` | Cable, USB port, or competing app holding the connection | Replug, close Xcode/iTunes/Finder iPhone view |
+| `rodmanInstalledVersion` is `null` | Runner not installed (or install failed) | [Trust and runner setup](/signalroom/setup/trust-runner) |
+| `rodmanInstalledVersion` is older than expected | Free Apple ID cert expired (7 days), or runner version bumped | Re-run install from Warmr's Devices page |
+| Lane shows ready but threads fail "device not found" | Lane was claimed by another Warmr instance, or unplugged after thread started | Check for competing instances; replug |
+| Multiple lanes intermittently drop under load | Bus-powered USB hub | Switch to a powered USB hub |
+| New lane on the Devices page shows `assignedPort: null` | Warmr hasn't bound a port to it yet (transient) | Wait 10–30 seconds; if persistent, restart Warmr.app |
+
+## Related
+
+- [iPhone lanes (setup)](/signalroom/setup/iphone-lanes) — hardware requirements, USB cables, hubs.
+- [Trust and runner setup](/signalroom/setup/trust-runner) — installing RodmanRunner.
+- [Device state model](/reference/device-state-model) — field schema.
+- [Failure recovery](/signalroom/operator-guide/failure-recovery) — recovering from lane errors.
+- [Agent docs](/signalroom/agent-docs) — programmatic lane inspection via `warmrctl`.

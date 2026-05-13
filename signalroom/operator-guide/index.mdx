@@ -1,39 +1,87 @@
 ---
 title: Operator guide
-description: Conservative guide to SignalRoom operating concepts backed by Warmr.
+description: How the SignalRoom operating concepts — device lanes, posting runs, cooldowns, approvals, logs and receipts, failure recovery — fit together.
 ---
 
 # Operator guide
 
-Status: In progress. Use this as a map for repo operators and agents, not a finished public manual.
+Status: Current overview. Each subsection links to a deeper page; this index is the map.
 
-SignalRoom is the public-facing name and landing layer. Warmr is the app, repo, and control-plane implementation. The operator guide explains how device lanes, run control, logs, cooldowns, approvals, and receipts should fit together.
+SignalRoom's operating model has six concepts. They sit on top of the Warmr control plane, but you can operate the product without reading the control-plane reference — every concept has a UI surface in Warmr.app and a `warmrctl` surface for scripts and agents.
 
-## Current operating surface
+## The six concepts
 
-Current:
+```
+                ┌─────────────────────────────────────────────────┐
+                │                  Device lanes                    │
+                │   One iPhone = one lane = one runner at a time   │
+                └────────────────────────┬────────────────────────┘
+                                         │
+                                         ▼
+        ┌────────────────────────────────────────────────────────┐
+        │                     Posting runs                        │
+        │  Template × Account list × Lanes × (optional proxy)     │
+        └─────┬────────────────┬────────────────┬─────────────────┘
+              │                │                │
+              ▼                ▼                ▼
+       ┌────────────┐    ┌────────────┐    ┌─────────────────┐
+       │ Cooldowns  │    │ Approvals  │    │ Logs + receipts │
+       │ Pacing the │    │ Operator   │    │ Streaming +     │
+       │ work       │    │ intent     │    │ post-run audit  │
+       │            │    │ gates      │    │                 │
+       └────────────┘    └────────────┘    └─────────────────┘
+                                                  │
+                                                  ▼
+                                    ┌──────────────────────┐
+                                    │  Failure recovery     │
+                                    │  When a run errors    │
+                                    │  or a lane wedges     │
+                                    └──────────────────────┘
+```
 
-- Device lanes are visible through `warmrctl devices list`.
-- Templates are visible through `warmrctl templates list`.
-- Threads are visible through `warmrctl thread list`.
-- Logs are subscribable through `warmrctl logs`.
-- Minimal evidence export exists through `warmrctl evidence export`.
-- Control-plane action methods can start and stop thread configurations when automation is enabled.
+### [Device lanes](/signalroom/operator-guide/device-lanes)
 
-## In-progress operator concepts
+A lane is one physical iPhone connected to the Mac host. Lanes have ownership (exactly one Warmr instance owns a lane at a time), readiness (connected + trusted + runner installed), and a state surface (`warmrctl devices list`). Scaling SignalRoom = adding more lanes, not bigger lanes.
 
-In progress:
+### [Posting runs](/signalroom/operator-guide/posting-runs) → [step-by-step](/signalroom/how-to/posting-runs)
 
-- Posting runs as a human-readable operator workflow name.
-- Cooldown review and pacing surfaces.
-- Operator approvals before controlled runs.
-- Clear receipts for what happened on each lane.
-- Failure recovery docs that help the operator decide whether to retry, stop, or inspect.
+A posting run is the operator-facing label for the publish workflow. Under the hood it's a **thread**: a template + an account list + one or more lanes. Threads start, run, and finish. Each thread has an `id`, a `status`, and a set of counters (videos watched, likes given, accounts processed). One posting run can fan out across multiple lanes in parallel.
 
-## Planned public docs
+### [Cooldowns](/signalroom/operator-guide/cooldowns)
 
-Planned:
+Three pause knobs control pacing: between publications on the same account, between accounts, between cycles. Cooldowns aren't just throttling — they're what makes "five publications across a list" look like a person working rather than a script crashing through the list. Sensible defaults are documented; pushing them too low produces the failure modes most operators run into first.
 
-- Trial setup path for teams bringing their own phones.
-- Call based access and guided onboarding docs.
-- Public docs that avoid overstating incomplete behavior.
+### [Approvals](/signalroom/operator-guide/approvals)
+
+Action commands (`thread start`, `thread stop`, `evidence export`, app lifecycle) require explicit operator intent. The control plane has an **automation enabled** toggle that gates action methods entirely — when it's off, `thread start` returns a domain error instead of doing anything. Agents are expected to treat this as a hard wall and not try to work around it.
+
+### [Logs and receipts](/signalroom/operator-guide/logs-and-receipts)
+
+Two surfaces. **Logs** are server-pushed `log.line` notifications you can subscribe to for real-time visibility (`warmrctl logs --follow`). **Receipts** are evidence bundles you export at the end of a run (`warmrctl evidence export`) — they're the "what happened" artifact for review or support tickets.
+
+### [Failure recovery](/signalroom/operator-guide/failure-recovery)
+
+When a run errors, recovery is layered: per-step retry inside the runner, runner restart on the iPhone, lane reconnect from the Mac, and (last resort) `app restart`. The page walks the decision tree — when to wait, when to intervene, when an error class means the operator (not the app) has to do something.
+
+## What's NOT in this section
+
+- **Step-by-step setup** for a posting run, captions, activity workflows, content folders → that's [How-to guides](/signalroom/how-to/posting-runs).
+- **Host machine / iPhone hardware prep** → [Setup](/signalroom/setup/mac-host).
+- **Driving runs from `warmrctl` for agents and scripts** → [Agent docs](/signalroom/agent-docs).
+- **Schema / control-plane / state-model details** → [Reference](/reference/control-plane).
+
+This section is the **concept layer**. Use it when you want to understand *what* something is in SignalRoom's model; use the how-to and reference pages when you want to *do* something or look up a field.
+
+## A typical operator's mental model
+
+After your [first 30 minutes](/signalroom/quickstart), this is the model that gets refined:
+
+- **Lanes** are physical and finite — adding a lane means adding hardware.
+- **Templates** are the recipes you write once and reuse across runs.
+- **Account lists** are the targets a template gets applied to.
+- **Threads** are runs in flight — they hold a template, accounts, lanes, and runtime state.
+- **Receipts** are the immutable record of what a thread did.
+- **Cooldowns + approvals** are the rate-limiters and the operator's seat in the loop.
+- **Failure recovery** is the rulebook for what the app handles automatically vs. what wants human attention.
+
+If you internalize that model, the rest of the docs map cleanly.

@@ -1,36 +1,131 @@
 ---
 title: Approvals
-description: Operator approval boundaries for controlled runs.
+description: The operator-intent gate. What requires explicit approval, how the automation-enabled toggle works, and how agents should treat action commands.
 ---
 
 # Approvals
 
-Status: In progress.
+Status: Current reference for the approval-gate model. Cockpit-level approval receipts are In progress.
 
-Approvals are a product and operating principle: the operator should understand the lane, account, template, and recent logs before a controlled run starts.
+Approvals are the seat in the loop that distinguishes "an agent inspected something" from "an agent did something." Read methods are always free; action methods sit behind two gates — an explicit operator-intent step and a global automation-enabled toggle.
 
-## Current safe behavior
+## The two-gate model
 
-Current:
+```
+       Action attempted (thread start, evidence export, app lifecycle, ...)
+                                  │
+                ┌─────────────────┴─────────────────┐
+                ▼                                   ▼
+       Automation toggle?               Operator intent (caller-side)?
+   Warmr's automation-enabled            Explicit human approval or
+   switch is ON in the app                durable agent instruction
+                │                                   │
+                └─────────────────┬─────────────────┘
+                                  ▼
+                              Action runs
+```
 
-- Agents should inspect state before taking action.
-- Action commands should only be used after operator intent is clear.
-- Some control-plane actions require automation to be explicitly enabled.
-- Repo agents must not make product or public-claim changes beyond the requested scope.
+If either gate fails, the action does not run.
 
-## Approval checklist
+## Gate 1 — automation enabled
 
-In progress:
+Warmr has a global **Automation Enabled** toggle in the app. When it's off, the control plane refuses every action method and returns a domain error:
 
-1. Confirm device lane is connected and not owned by another runtime.
-2. Confirm the account and configuration are the intended target.
-3. Review recent logs or receipts.
-4. Confirm cooldown and pacing expectations.
-5. Run the smallest safe action.
-6. Capture logs and result state.
+```
+automation disabled
+```
 
-Planned:
+This is enforced server-side. Agents cannot work around it; flipping the toggle is the operator's job.
 
-- Cockpit-level approvals.
-- Approval receipts connected to run logs.
-- Public trial docs that explain review without promising outcomes.
+Operator-side, automation is typically:
+
+- **On** during posting runs and active workflows.
+- **Off** during setup, debugging, configuration edits, or any time the operator wants the host to be observable but inert.
+
+Read methods (`status`, `devices.list`, `templates.list`, `thread.list`, `logs.subscribe`) work in both states. You can fully inspect the host with automation off — you just can't change anything.
+
+### What's gated by this toggle
+
+Currently gated:
+
+- `thread.start` — start a posting run / activity workflow / onboarding run.
+- `thread.stop` — gracefully stop a running thread.
+- `evidence.export` — write a receipt bundle to disk.
+- `app.start` / `app.stop` / `app.restart` — Warmr lifecycle.
+- `warmrctl install` / `upgrade` / `uninstall` — installer surfaces.
+
+Read methods are **not** gated and can be issued any time the app is running.
+
+## Gate 2 — operator intent
+
+The second gate is caller-side: the agent or operator running the command needs explicit intent to issue an action.
+
+For human operators, intent is the click in Warmr.app or the typed command in a terminal.
+
+For AI agents, intent is more structured:
+
+1. **The operator named the action** — "start configuration X" or "stop the run on lane 2." Generic instructions like "run my morning routine" need a durable record of what that routine is.
+2. **The agent ran pre-flight inspection** — `status`, `devices list`, `thread list` to confirm the action wouldn't collide with existing work.
+3. **The agent confirmed the configuration matches the operator's description** — same template, same accounts, same lanes.
+4. **The agent captured pre-action state** as receipts material.
+
+All four steps are detailed in [Agent docs → Common workflows](/signalroom/agent-docs#common-workflows).
+
+## What "approval" means for each action
+
+| Action | What needs operator intent | Reversible? |
+| --- | --- | --- |
+| `thread.start` | Operator named the configuration ID | Yes (`thread.stop`) |
+| `thread.stop` | Operator approves stopping mid-run | Yes (restart) but in-flight publication state may not survive |
+| `evidence.export` | Operator approves writing the receipt | Each export creates a separate bundle; you can re-export |
+| `app.restart` | Operator approves interrupting **every** lane on the host | Hard to reverse — in-flight runs lose state |
+| `app.stop` | Operator approves shutting Warmr down | Hard to reverse if other agents/operators are mid-action |
+| `warmrctl install` (install helpers) | Operator approves modifying the host | Some helpers are install-only, no automated uninstall |
+
+`app.restart` and the install helpers are the most destructive of this set. Treat them as "operator must be present and aware," not "operator nodded at it last Tuesday."
+
+## Agents and action commands
+
+The rule from [Agent docs](/signalroom/agent-docs):
+
+> Read-only methods are always safe. Action methods require operator-approved intent **and** require automation to be enabled. If an action method returns `automation disabled`, don't try to enable it — surface the error to the operator and stop.
+
+Agents that try to work around an `automation disabled` error are violating the policy. The expected response is:
+
+```
+Action <method> failed: automation disabled.
+Automation toggle is off in Warmr.app. Please flip it on and re-run.
+```
+
+…and then wait for the operator. The agent does not call `app.start` to try a workaround. It doesn't poll. It reports and stops.
+
+## Approval receipts (In progress)
+
+Each action's response frame is the immediate evidence of intent. Including:
+
+- The JSON-RPC `request id` the agent sent.
+- The action method.
+- Timestamp.
+- Schema version.
+
+In progress: link these into the evidence bundle so a single export captures the full action history of a run — what was approved, by whom, when, with what parameters.
+
+## Operator-side approval checklist
+
+Before issuing an action that touches a lane:
+
+- [ ] Automation enabled in Warmr.app.
+- [ ] Lane connected (`isConnected: true`), runner installed, profile trusted.
+- [ ] No conflicting thread already running on the lane.
+- [ ] Template and account list match expectation.
+- [ ] Cooldowns and pacing reviewed for this configuration.
+- [ ] Logs visible (either Warmr's Logs view or `warmrctl logs --follow` in a terminal).
+
+A no-surprises action looks like: pre-flight passes, action succeeds, post-action state matches expectation, logs and evidence captured. If any of those is missing, the action wasn't really "approved" — it was guessed.
+
+## Related
+
+- [Agent docs](/signalroom/agent-docs) — full agent-side workflow including pre-flight, action, and receipt capture.
+- [Failure recovery](/signalroom/operator-guide/failure-recovery) — what to do when a gated action fails.
+- [Logs and receipts](/signalroom/operator-guide/logs-and-receipts) — capturing the artifacts that make an action reviewable after the fact.
+- [Forbidden agent actions](/agents/forbidden-actions) — actions that even the automation toggle won't authorize.

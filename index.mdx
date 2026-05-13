@@ -1,33 +1,66 @@
 ---
-title: SignalRoom docs home
-description: Repo-native entry point for SignalRoom docs backed by the Warmr app and repo.
+title: SignalRoom docs
+description: Documentation for SignalRoom — private TikTok publishing software for operators. Runs on your Mac, drives your iPhones, your accounts.
 ---
 
-# SignalRoom docs home
+# SignalRoom docs
 
-Status: Current repo-native entry point. Public publishing should stay conservative until trial onboarding is ready.
+Welcome. SignalRoom is private software for TikTok operators running real iPhones on a Mac. These docs are the operator manual, the setup guide, and the agent reference all in one place.
 
-SignalRoom is the public-facing name and landing layer. Warmr is the app, repo, and control-plane implementation.
+Pick where to start based on what you need:
 
-SignalRoom is private software for TikTok operators. It is for teams that want to run their own TikTok phone setup with device lanes, posting runs, account state, logs, cooldowns, and operator approvals in one private cockpit.
+## What is SignalRoom?
 
-The Warmr repo remains the source of truth. Mintlify should publish a curated mirror of these docs only after the project is pointed at this docs root and publication is approved.
+→ **[SignalRoom product overview](/signalroom/index)** — what it is, who it's for, the capabilities catalog, FAQ, and what it isn't.
 
-## Read first
+## I'm setting it up for the first time
 
-Current:
+→ **[Your first 30 minutes](/signalroom/quickstart)** — the end-to-end walkthrough: DMG → connect iPhone → install runner → first activity workflow on a real account.
 
-1. [SignalRoom docs](signalroom/index) for the conservative product overview.
-2. [Quickstart](signalroom/quickstart) for the current setup path.
-3. [Claims and safety](signalroom/safety) before writing public copy or operator-facing docs.
-4. [Agent docs](signalroom/agent-docs) before giving AI agents repo or control-plane tasks.
+Then walk through the deeper setup pages as you need them:
 
-In progress:
+- [Mac host setup](/signalroom/setup/mac-host)
+- [iPhone lanes](/signalroom/setup/iphone-lanes)
+- [iPhone settings](/signalroom/setup/developer-mode)
+- [Trust and runner setup](/signalroom/setup/trust-runner)
 
-- More operator docs for approvals, cooldown review, receipts, and failure recovery.
-- A public trial path for teams bringing their own Mac host and iPhone lanes.
-- Mintlify publication from this repo-native source tree.
+## I'm operating it day-to-day
+
+The how-to guides cover the practical surface:
+
+- [Posting runs](/signalroom/how-to/posting-runs) — your video publishing workflow.
+- [Activity workflows](/signalroom/how-to/activity-workflows) — warmup before publishing.
+- [Captions](/signalroom/how-to/captions) — the four caption sources.
+- [Content folder structure](/signalroom/how-to/content-folders) — where media lives on disk.
+
+The operator guide covers the concepts behind them:
+
+- [Device lanes](/signalroom/operator-guide/device-lanes)
+- [Cooldowns](/signalroom/operator-guide/cooldowns)
+- [Approvals](/signalroom/operator-guide/approvals)
+- [Logs and receipts](/signalroom/operator-guide/logs-and-receipts)
+- [Failure recovery](/signalroom/operator-guide/failure-recovery)
+
+## I'm an AI agent driving Warmr
+
+→ **[Agent docs](/signalroom/agent-docs)** — universal principles, surface-by-surface command reference, common workflows, anti-patterns, quick reference card.
+
+Plus the in-repo agent rules: [overview](/agents/overview), [repo rules](/agents/repo-rules), [worktree protocol](/agents/worktree-protocol), [safe actions](/agents/safe-agent-actions), [forbidden actions](/agents/forbidden-actions).
+
+## I'm writing public copy or claims
+
+→ **[Claims and safety](/signalroom/safety)** — the guardrails this site is held to. Read this before adding anything to landing pages, blog posts, or marketing material.
+
+## I need the reference
+
+- [warmrctl CLI](/signalroom/reference/warmrctl)
+- [Control plane (JSON-RPC)](/reference/control-plane)
+- [Run state model](/reference/run-state-model)
+- [Device state model](/reference/device-state-model)
+- [Log events](/reference/log-events)
 
 ## Safety framing
 
-SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes.
+SignalRoom helps operators make attention workflows visible, paced, logged, and reviewable. It does not guarantee platform or account outcomes. Public docs do not describe hidden, evasive, or detection-avoidance behavior.
+
+If you're paged at this docs site from the SignalRoom landing at <https://signalrooms.xyz>, welcome — the docs are open and you don't need an account to read them.
