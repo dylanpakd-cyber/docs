@@ -1,6 +1,6 @@
 ---
-title: Operator guide
-description: How the SignalRoom operating concepts — device lanes, posting runs, cooldowns, approvals, logs and receipts, failure recovery — fit together.
+title: "Operator guide"
+description: "The SignalRoom operating concepts — device lanes, posting runs, cooldowns, approvals, logs and receipts, failure recovery — fit together.                         "
 ---
 
 # Operator guide
@@ -11,7 +11,7 @@ SignalRoom's operating model has six concepts. They sit on top of the Warmr cont
 
 ## The six concepts
 
-```
+```text
                 ┌─────────────────────────────────────────────────┐
                 │                  Device lanes                    │
                 │   One iPhone = one lane = one runner at a time   │
@@ -41,11 +41,11 @@ SignalRoom's operating model has six concepts. They sit on top of the Warmr cont
 
 ### [Device lanes](/signalroom/operator-guide/device-lanes)
 
-A lane is one physical iPhone connected to the Mac host. Lanes have ownership (exactly one Warmr instance owns a lane at a time), readiness (connected + trusted + runner installed), and a state surface (`warmrctl devices list`). Scaling SignalRoom = adding more lanes, not bigger lanes.
+A lane is one physical iPhone connected to the Mac host. Lanes have ownership (exactly one Warmr instance owns a lane at a time), readiness (connected \+ trusted \+ runner installed), and a state surface (`warmrctl devices list`). Scaling SignalRoom = adding more lanes, not bigger lanes.
 
 ### [Posting runs](/signalroom/operator-guide/posting-runs) → [step-by-step](/signalroom/how-to/posting-runs)
 
-A posting run is the operator-facing label for the publish workflow. Under the hood it's a **thread**: a template + an account list + one or more lanes. Threads start, run, and finish. Each thread has an `id`, a `status`, and a set of counters (videos watched, likes given, accounts processed). One posting run can fan out across multiple lanes in parallel.
+A posting run is the operator-facing label for the publish workflow. Under the hood it's a **thread**: a template \+ an account list \+ one or more lanes. Threads start, run, and finish. Each thread has an `id`, a `status`, and a set of counters (videos watched, likes given, accounts processed). One posting run can fan out across multiple lanes in parallel.
 
 ### [Cooldowns](/signalroom/operator-guide/cooldowns)
 
@@ -70,7 +70,7 @@ When a run errors, recovery is layered: per-step retry inside the runner, runner
 - **Driving runs from `warmrctl` for agents and scripts** → [Agent docs](/signalroom/agent-docs).
 - **Schema / control-plane / state-model details** → [Reference](/reference/control-plane).
 
-This section is the **concept layer**. Use it when you want to understand *what* something is in SignalRoom's model; use the how-to and reference pages when you want to *do* something or look up a field.
+This section is the **concept layer**. Use it when you want to understand _what_ something is in SignalRoom's model; use the how-to and reference pages when you want to _do_ something or look up a field.
 
 ## A typical operator's mental model
 
@@ -81,7 +81,7 @@ After your [first 30 minutes](/signalroom/quickstart), this is the model that ge
 - **Account lists** are the targets a template gets applied to.
 - **Threads** are runs in flight — they hold a template, accounts, lanes, and runtime state.
 - **Receipts** are the immutable record of what a thread did.
-- **Cooldowns + approvals** are the rate-limiters and the operator's seat in the loop.
+- **Cooldowns \+ approvals** are the rate-limiters and the operator's seat in the loop.
 - **Failure recovery** is the rulebook for what the app handles automatically vs. what wants human attention.
 
 If you internalize that model, the rest of the docs map cleanly.
