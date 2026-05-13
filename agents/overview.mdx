@@ -7,9 +7,9 @@ description: Orientation page for AI agents working inside the Warmr private rep
 
 > ## ⚠ Read this first
 >
-> **These pages are for AI agents editing files inside the private Warmr repo — not for agents using SignalRoom.**
+> **These pages are for AI agents editing files inside the private Warmr repo, not for agents using SignalRoom.**
 >
-> If you got here because someone said "Claude, drive my morning posting run" or "GPT, check whether Lane 2 finished" — **you're in the wrong section**. Go to [Driving Warmr (for agents)](/signalroom/agent-docs) instead. That page covers `warmrctl` usage, pre-flight, action commands, and recovery. Nothing here applies to live operations.
+> If you got here because someone said "Claude, drive my morning posting run" or "GPT, check whether Lane 2 finished". **you're in the wrong section**. Go to [Driving Warmr (for agents)](/signalroom/agent-docs) instead. That page covers `warmrctl` usage, pre-flight, action commands, and recovery. Nothing here applies to live operations.
 >
 > **Stop here if any of the following are true:**
 >
@@ -21,16 +21,16 @@ description: Orientation page for AI agents working inside the Warmr private rep
 
 Status: Current repo-native rules. The Warmr repo files (`STATUS.md`, `CLAUDE.md`, `AGENTS.md`, `CONTEXT.md`) are the source of truth and override anything here on conflict.
 
-SignalRoom is the public product name. Warmr is the macOS app + control-plane repo that powers it. These rules govern how AI agents work inside the Warmr repo — what to read first, where to make changes, what to commit, what to leave alone.
+SignalRoom is the public product name. Warmr is the macOS app + control-plane repo that powers it. These rules govern how AI agents work inside the Warmr repo, what to read first, where to make changes, what to commit, what to leave alone.
 
 ## Source order
 
 Read in this order before changing anything in the Warmr repo:
 
-1. `STATUS.md` — current state, what's shipped, what's in flight.
-2. `CLAUDE.md` — Claude-specific protocol and the worktree workflow.
-3. `AGENTS.md` — Codex / other-agent protocol and repo rules.
-4. `CONTEXT.md` — the project's domain language.
+1. `STATUS.md`: current state, what's shipped, what's in flight.
+2. `CLAUDE.md`. Claude-specific protocol and the worktree workflow.
+3. `AGENTS.md`. Codex / other-agent protocol and repo rules.
+4. `CONTEXT.md`: the project's domain language.
 5. Existing docs under `docs/agents`, `docs/plans`, `docs/prd`, `docs/release`, `docs/adr`, and `docs/handoffs`.
 
 If you can't read those, **you can't work in the Warmr repo**. The public-facing docs (this site) are a curated mirror, not a substitute.
@@ -45,7 +45,7 @@ If you can't read those, **you can't work in the Warmr repo**. The public-facing
 
 ## Audience boundary
 
-This section answers "I'm editing Warmr's source — what are the rules?"
+This section answers "I'm editing Warmr's source, what are the rules?"
 
 If your question is one of:
 
@@ -58,7 +58,7 @@ If your question is one of:
 
 ## Continue reading
 
-- [Repo rules](/agents/repo-rules) — required read order, safety rules, reporting rules.
-- [Worktree protocol](/agents/worktree-protocol) — fresh-worktree workflow, freshness gates, canonical-checkout policy.
-- [Safe agent actions](/agents/safe-agent-actions) — what you can do without escalation.
-- [Forbidden agent actions](/agents/forbidden-actions) — what you must not do, and the cost of doing it anyway.
+- [Repo rules](/agents/repo-rules), required read order, safety rules, reporting rules.
+- [Worktree protocol](/agents/worktree-protocol), fresh-worktree workflow, freshness gates, canonical-checkout policy.
+- [Safe agent actions](/agents/safe-agent-actions), what you can do without escalation.
+- [Forbidden agent actions](/agents/forbidden-actions), what you must not do, and the cost of doing it anyway.

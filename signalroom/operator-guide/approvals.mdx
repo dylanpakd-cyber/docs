@@ -7,7 +7,7 @@ description: The operator-intent gate. What requires explicit approval, how the 
 
 Status: Current reference for the approval-gate model. Cockpit-level approval receipts are In progress.
 
-Approvals are the seat in the loop that distinguishes "an agent inspected something" from "an agent did something." Read methods are always free; action methods sit behind two gates — an explicit operator-intent step and a global automation-enabled toggle.
+Approvals are the seat in the loop that distinguishes "an agent inspected something" from "an agent did something." Read methods are always free; action methods sit behind two gates, an explicit operator-intent step and a global automation-enabled toggle.
 
 ## The two-gate model
 
@@ -27,7 +27,7 @@ Approvals are the seat in the loop that distinguishes "an agent inspected someth
 
 If either gate fails, the action does not run.
 
-## Gate 1 — automation enabled
+## Gate 1: automation enabled
 
 Warmr has a global **Automation Enabled** toggle in the app. When it's off, the control plane refuses every action method and returns a domain error:
 
@@ -42,21 +42,21 @@ Operator-side, automation is typically:
 - **On** during posting runs and active workflows.
 - **Off** during setup, debugging, configuration edits, or any time the operator wants the host to be observable but inert.
 
-Read methods (`status`, `devices.list`, `templates.list`, `thread.list`, `logs.subscribe`) work in both states. You can fully inspect the host with automation off — you just can't change anything.
+Read methods (`status`, `devices.list`, `templates.list`, `thread.list`, `logs.subscribe`) work in both states. You can fully inspect the host with automation off, you just can't change anything.
 
 ### What's gated by this toggle
 
 Currently gated:
 
-- `thread.start` — start a posting run / activity workflow / onboarding run.
-- `thread.stop` — gracefully stop a running thread.
-- `evidence.export` — write a receipt bundle to disk.
-- `app.start` / `app.stop` / `app.restart` — Warmr lifecycle.
-- `warmrctl install` / `upgrade` / `uninstall` — installer surfaces.
+- `thread.start`, start a posting run / activity workflow / onboarding run.
+- `thread.stop`, gracefully stop a running thread.
+- `evidence.export`, write a receipt bundle to disk.
+- `app.start` / `app.stop` / `app.restart`. Warmr lifecycle.
+- `warmrctl install` / `upgrade` / `uninstall`, installer surfaces.
 
 Read methods are **not** gated and can be issued any time the app is running.
 
-## Gate 2 — operator intent
+## Gate 2: operator intent
 
 The second gate is caller-side: the agent or operator running the command needs explicit intent to issue an action.
 
@@ -64,9 +64,9 @@ For human operators, intent is the click in Warmr.app or the typed command in a 
 
 For AI agents, intent is more structured:
 
-1. **The operator named the action** — "start configuration X" or "stop the run on lane 2." Generic instructions like "run my morning routine" need a durable record of what that routine is.
-2. **The agent ran pre-flight inspection** — `status`, `devices list`, `thread list` to confirm the action wouldn't collide with existing work.
-3. **The agent confirmed the configuration matches the operator's description** — same template, same accounts, same lanes.
+1. **The operator named the action**: "start configuration X" or "stop the run on lane 2." Generic instructions like "run my morning routine" need a durable record of what that routine is.
+2. **The agent ran pre-flight inspection**: `status`, `devices list`, `thread list` to confirm the action wouldn't collide with existing work.
+3. **The agent confirmed the configuration matches the operator's description**: same template, same accounts, same lanes.
 4. **The agent captured pre-action state** as receipts material.
 
 All four steps are detailed in [Agent docs → Common workflows](/signalroom/agent-docs#common-workflows).
@@ -78,7 +78,7 @@ All four steps are detailed in [Agent docs → Common workflows](/signalroom/age
 | `thread.start` | Operator named the configuration ID | Yes (`thread.stop`) |
 | `thread.stop` | Operator approves stopping mid-run | Yes (restart) but in-flight publication state may not survive |
 | `evidence.export` | Operator approves writing the receipt | Each export creates a separate bundle; you can re-export |
-| `app.restart` | Operator approves interrupting **every** lane on the host | Hard to reverse — in-flight runs lose state |
+| `app.restart` | Operator approves interrupting **every** lane on the host | Hard to reverse, in-flight runs lose state |
 | `app.stop` | Operator approves shutting Warmr down | Hard to reverse if other agents/operators are mid-action |
 | `warmrctl install` (install helpers) | Operator approves modifying the host | Some helpers are install-only, no automated uninstall |
 
@@ -88,7 +88,7 @@ All four steps are detailed in [Agent docs → Common workflows](/signalroom/age
 
 The rule from [Agent docs](/signalroom/agent-docs):
 
-> Read-only methods are always safe. Action methods require operator-approved intent **and** require automation to be enabled. If an action method returns `automation disabled`, don't try to enable it — surface the error to the operator and stop.
+> Read-only methods are always safe. Action methods require operator-approved intent **and** require automation to be enabled. If an action method returns `automation disabled`, don't try to enable it, surface the error to the operator and stop.
 
 Agents that try to work around an `automation disabled` error are violating the policy. The expected response is:
 
@@ -108,7 +108,7 @@ Each action's response frame is the immediate evidence of intent. Including:
 - Timestamp.
 - Schema version.
 
-In progress: link these into the evidence bundle so a single export captures the full action history of a run — what was approved, by whom, when, with what parameters.
+In progress: link these into the evidence bundle so a single export captures the full action history of a run, what was approved, by whom, when, with what parameters.
 
 ## Operator-side approval checklist
 
@@ -121,11 +121,11 @@ Before issuing an action that touches a lane:
 - [ ] Cooldowns and pacing reviewed for this configuration.
 - [ ] Logs visible (either Warmr's Logs view or `warmrctl logs --follow` in a terminal).
 
-A no-surprises action looks like: pre-flight passes, action succeeds, post-action state matches expectation, logs and evidence captured. If any of those is missing, the action wasn't really "approved" — it was guessed.
+A no-surprises action looks like: pre-flight passes, action succeeds, post-action state matches expectation, logs and evidence captured. If any of those is missing, the action wasn't really "approved", it was guessed.
 
 ## Related
 
-- [Agent docs](/signalroom/agent-docs) — full agent-side workflow including pre-flight, action, and receipt capture.
-- [Failure recovery](/signalroom/operator-guide/failure-recovery) — what to do when a gated action fails.
-- [Logs and receipts](/signalroom/operator-guide/logs-and-receipts) — capturing the artifacts that make an action reviewable after the fact.
-- [Forbidden agent actions](/agents/forbidden-actions) — actions that even the automation toggle won't authorize.
+- [Agent docs](/signalroom/agent-docs), full agent-side workflow including pre-flight, action, and receipt capture.
+- [Failure recovery](/signalroom/operator-guide/failure-recovery), what to do when a gated action fails.
+- [Logs and receipts](/signalroom/operator-guide/logs-and-receipts), capturing the artifacts that make an action reviewable after the fact.
+- [Forbidden agent actions](/agents/forbidden-actions), actions that even the automation toggle won't authorize.

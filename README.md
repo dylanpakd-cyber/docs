@@ -1,6 +1,6 @@
 # SignalRoom docs
 
-Mintlify source for [SignalRoom](https://67labs.mintlify.app) — the public documentation surface for the Warmr app.
+Mintlify source for [SignalRoom](https://67labs.mintlify.app), the public documentation surface for the Warmr app.
 
 ## What SignalRoom is
 
@@ -47,7 +47,7 @@ mint dev
 
 Preview runs at <http://localhost:3000>. The CLI watches files for changes.
 
-If `mint dev` 404s, you're not in a folder with a valid `docs.json` — `cd` into the repo root.
+If `mint dev` 404s, you're not in a folder with a valid `docs.json`. `cd` into the repo root.
 
 ## Publishing
 

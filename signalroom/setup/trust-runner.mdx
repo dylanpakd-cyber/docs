@@ -7,7 +7,7 @@ description: Installing the on-device test runner via App Store Connect API (rec
 
 Status: Current setup reference. This page picks up after [iPhone settings](/signalroom/setup/developer-mode); confirm every box on that page first.
 
-Warmr drives the iPhone through an on-device test runner bundle signed with **your own** Apple Developer account. There are two install paths — pick one:
+Warmr drives the iPhone through an on-device test runner bundle signed with **your own** Apple Developer account. There are two install paths, pick one:
 
 | Path | When to pick | Re-sign cadence |
 | --- | --- | --- |
@@ -16,16 +16,16 @@ Warmr drives the iPhone through an on-device test runner bundle signed with **yo
 
 The recommended path takes about two minutes once you have the API key.
 
-## Path A — App Store Connect API
+## Path A: App Store Connect API
 
 Use this when you have a **paid Apple Developer account** and an **App Manager** (or higher) role on it. Developer-role keys cannot create signing profiles and will be rejected.
 
 ### 1. Generate a Team Key in App Store Connect
 
 1. Open [appstoreconnect.apple.com/access/integrations/api](https://appstoreconnect.apple.com/access/integrations/api).
-2. Switch to the **Team Keys** tab — not Individual Keys. Individual keys cannot create signing profiles.
+2. Switch to the **Team Keys** tab: not Individual Keys. Individual keys cannot create signing profiles.
 3. Click **Generate API Key**. Pick role = **App Manager** (or higher).
-4. Apple shows the **Issuer ID** and **Key ID**, and lets you download the **.p8** file. **Save it now** — Apple only lets you download the `.p8` once.
+4. Apple shows the **Issuer ID** and **Key ID**, and lets you download the **.p8** file. **Save it now**: Apple only lets you download the `.p8` once.
 
 **Required:** Team Key (not Individual), App Manager role or higher, `.p8` saved at first download.
 
@@ -36,25 +36,25 @@ Use this when you have a **paid Apple Developer account** and an **App Manager**
 3. Fill in **Key ID**, **Issuer ID**, and drop the **.p8** into the upload area.
 4. Click **Test connection & save**.
 
-The **Team ID** is auto-detected from your account. If your team is brand new with no registered identifiers yet, the wizard asks for the Team ID manually — it's the 10-character string in the top-right corner at [developer.apple.com/account](https://developer.apple.com/account).
+The **Team ID** is auto-detected from your account. If your team is brand new with no registered identifiers yet, the wizard asks for the Team ID manually, it's the 10-character string in the top-right corner at [developer.apple.com/account](https://developer.apple.com/account).
 
 ### 3. Sign and install
 
-Once the key is saved, the **Install** and **Reinstall** buttons on the Devices page activate per device. Click Install — Warmr signs the runner bundle via JWT through the API and installs it. Existing UDIDs registered through any other path keep working; Apple uses one registry behind all signing flows.
+Once the key is saved, the **Install** and **Reinstall** buttons on the Devices page activate per device. Click Install. Warmr signs the runner bundle via JWT through the API and installs it. Existing UDIDs registered through any other path keep working; Apple uses one registry behind all signing flows.
 
 ### Is this safe?
 
-Yes — the App Store Connect API is Apple's official way to authenticate with a developer account. The flow uses short-lived **JWT tokens** signed locally with your `.p8`. The key never leaves your Mac, no Apple ID password is stored, and your account's 2FA is left untouched.
+Yes, the App Store Connect API is Apple's official way to authenticate with a developer account. The flow uses short-lived **JWT tokens** signed locally with your `.p8`. The key never leaves your Mac, no Apple ID password is stored, and your account's 2FA is left untouched.
 
 Warmr operates strictly inside the **development sandbox** of your team:
 
-- Only **Development certificates and provisioning profiles** are created — the same kind Xcode would generate when you run a project on a connected iPhone.
+- Only **Development certificates and provisioning profiles** are created, the same kind Xcode would generate when you run a project on a connected iPhone.
 - **Production / App Store / Distribution certificates are not touched.** Apps you ship to the App Store, TestFlight builds, and any in-house Distribution profiles are completely independent.
 - Permissions on the API key are limited to installing on registered devices. Revoking the key in App Store Connect immediately cuts off Warmr's access.
 
 In short: this only affects test installs on the iPhones you've registered for development.
 
-## Path B — Xcode (free Apple ID)
+## Path B: Xcode (free Apple ID)
 
 Use this when you don't have a paid developer account. The runner's signature is valid for **7 days** with a free Apple ID; you'll re-install once a week.
 
@@ -67,7 +67,7 @@ Use this when you don't have a paid developer account. The runner's signature is
 7. Connect the iPhone and select it as the destination in the top bar.
 8. **Product → Build For → Testing** (`⌘⇧U`).
 
-With a free Apple ID the signature lasts 7 days. With a paid account, it lasts a year — at which point Path A is faster anyway.
+With a free Apple ID the signature lasts 7 days. With a paid account, it lasts a year, at which point Path A is faster anyway.
 
 ## Trust the developer profile
 
@@ -79,7 +79,7 @@ Regardless of which install path you used, after the first install on a given iP
 4. Tap **Trust**.
 5. Confirm.
 
-After this, the runner launches automatically whenever Warmr needs it — no need to open it manually.
+After this, the runner launches automatically whenever Warmr needs it, no need to open it manually.
 
 ## Verify the runner is installed
 
@@ -111,6 +111,6 @@ Each iPhone should show a non-null `rodmanInstalledVersion` and `isConnected: tr
 
 ## Related
 
-- [iPhone settings](/signalroom/setup/developer-mode) — required iOS settings checklist (run this first).
-- [Device state model](/reference/device-state-model) — `rodmanInstalledVersion` and related fields.
-- [Agent docs](/signalroom/agent-docs) — how agents should verify runner readiness before starting threads.
+- [iPhone settings](/signalroom/setup/developer-mode), required iOS settings checklist (run this first).
+- [Device state model](/reference/device-state-model). `rodmanInstalledVersion` and related fields.
+- [Agent docs](/signalroom/agent-docs), how agents should verify runner readiness before starting threads.

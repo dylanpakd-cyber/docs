@@ -1,6 +1,6 @@
 ---
 title: Logs and receipts
-description: The two evidence surfaces — streaming logs for real-time visibility and evidence bundles for post-run audit. What's in them, where they live, and how to use them.
+description: The two evidence surfaces, streaming logs for real-time visibility and evidence bundles for post-run audit. What's in them, where they live, and how to use them.
 ---
 
 # Logs and receipts
@@ -9,12 +9,12 @@ Status: Current reference for log subscription and minimal evidence export. Rich
 
 Two evidence surfaces, two use cases:
 
-- **Logs** — server-pushed `log.line` notifications you subscribe to for real-time visibility into a running thread.
-- **Receipts (evidence bundles)** — immutable artifacts you export at the end of a run, used for post-run review or to attach to a support ticket.
+- **Logs**: server-pushed `log.line` notifications you subscribe to for real-time visibility into a running thread.
+- **Receipts (evidence bundles)**: immutable artifacts you export at the end of a run, used for post-run review or to attach to a support ticket.
 
 Both are operational. Neither makes claims about TikTok-side outcomes; both record what Warmr's runner observed and did.
 
-## Logs — real-time visibility
+## Logs: real-time visibility
 
 ### How the stream works
 
@@ -30,7 +30,7 @@ The `warmrctl logs` command wraps this:
 | --- | --- |
 | `warmrctl logs` | Subscribes, prints the subscription confirmation, then unsubscribes. Useful to confirm the channel works. |
 | `warmrctl logs --follow` | Stays subscribed and streams notifications until Ctrl-C. |
-| `warmrctl logs --follow --configuration-id <ID>` | Streams notifications **only** for one configuration. Server-side filter — cheap. |
+| `warmrctl logs --follow --configuration-id <ID>` | Streams notifications **only** for one configuration. Server-side filter, cheap. |
 | `warmrctl logs --follow --account-username <USER>` | Streams only lines tagged with one TikTok username. |
 | `warmrctl --json logs --follow` | Streams as JSON-RPC frames (one per line) for agent parsing. |
 
@@ -59,7 +59,7 @@ You can combine `--configuration-id` and `--account-username` to narrow further.
 | `configurationName` | Human name from the thread configuration. |
 | `accountUsername` | The TikTok account this line was emitted under, when applicable. |
 | `severity` | `INFO`, `WARNING`, or `ERROR`. |
-| `message` | Free-form text — readable, not stable schema. |
+| `message` | Free-form text, readable, not stable schema. |
 
 Full reference: [Log events](/reference/log-events).
 
@@ -83,7 +83,7 @@ INFO  account switch begin (target=@user2)
 INFO  thread complete: 5/5 accounts processed
 ```
 
-An erroring run interleaves WARNING / ERROR lines with surrounding context — that's how you tell whether an error is fatal (followed by the thread stopping) or transient (followed by a retry).
+An erroring run interleaves WARNING / ERROR lines with surrounding context, that's how you tell whether an error is fatal (followed by the thread stopping) or transient (followed by a retry).
 
 ### Practical patterns
 
@@ -99,7 +99,7 @@ warmrctl logs --follow --configuration-id <CONFIGURATION_UUID>
 warmrctl logs --follow --account-username "@example"
 ```
 
-**Grab the last 60 seconds of logs after a failure (no time-range filter natively — you re-subscribe and wait):**
+**Grab the last 60 seconds of logs after a failure (no time-range filter natively, you re-subscribe and wait):**
 
 ```bash
 warmrctl --json logs --follow --configuration-id <CONFIGURATION_UUID> \
@@ -109,11 +109,11 @@ warmrctl --json logs --follow --configuration-id <CONFIGURATION_UUID> \
 **Multiplex multiple runs to one terminal:**
 
 ```bash
-# No filter — get everything. Only sane on small hosts.
+# No filter, get everything. Only sane on small hosts.
 warmrctl --json logs --follow | jq -c '.params | {time: .timestamp, cfg: .configurationName, sev: .severity, msg: .message}'
 ```
 
-## Receipts — post-run audit
+## Receipts: post-run audit
 
 ### Exporting a receipt
 
@@ -128,7 +128,7 @@ The command writes an **evidence bundle** to disk. The response includes the bun
 - The associated logs.
 - App state at the moment of export.
 
-Each export creates a separate bundle — older exports aren't superseded. Treat it like committing a git tag: once exported, the bundle is immutable from the agent's perspective.
+Each export creates a separate bundle, older exports aren't superseded. Treat it like committing a git tag: once exported, the bundle is immutable from the agent's perspective.
 
 ### What's in a bundle today
 
@@ -154,7 +154,7 @@ Planned:
 
 ### Where bundles live on disk
 
-The export response prints the path. Currently bundles live under Warmr's application support directory. Don't expect a stable on-disk path between versions — read it from the response.
+The export response prints the path. Currently bundles live under Warmr's application support directory. Don't expect a stable on-disk path between versions, read it from the response.
 
 If you need to ship a bundle to support, the response path is what you `tar` and attach.
 
@@ -163,7 +163,7 @@ If you need to ship a bundle to support, the response path is what you `tar` and
 Logs and receipts record what Warmr's runner observed and did. They are **not**:
 
 - Proof of TikTok-side success. A clean evidence export does **not** prove a video reached the For You feed, an account stayed in good standing, or a publication is visible to followers. It proves the in-app publish flow finished without an error from Warmr's perspective.
-- A bypass for platform policy. If a thread fails because TikTok showed a captcha or rate-limited the account, the receipt records that — it doesn't work around it.
+- A bypass for platform policy. If a thread fails because TikTok showed a captcha or rate-limited the account, the receipt records that, it doesn't work around it.
 - Marketing material. Per [Claims and safety](/signalroom/safety), don't paste evidence stats into copy that implies platform-outcome guarantees.
 
 What they **are**:
@@ -174,7 +174,7 @@ What they **are**:
 
 ## Related
 
-- [Log events (reference)](/reference/log-events) — `log.line` schema.
-- [Agent docs → logs / evidence](/signalroom/agent-docs#warmrctl-evidence-export) — capture patterns for agents.
-- [Failure recovery](/signalroom/operator-guide/failure-recovery) — using logs to classify an error before reacting.
-- [Approvals](/signalroom/operator-guide/approvals) — what makes a receipt's underlying actions auditable.
+- [Log events (reference)](/reference/log-events). `log.line` schema.
+- [Agent docs → logs / evidence](/signalroom/agent-docs#warmrctl-evidence-export), capture patterns for agents.
+- [Failure recovery](/signalroom/operator-guide/failure-recovery), using logs to classify an error before reacting.
+- [Approvals](/signalroom/operator-guide/approvals), what makes a receipt's underlying actions auditable.

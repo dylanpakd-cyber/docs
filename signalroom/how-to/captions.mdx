@@ -1,6 +1,6 @@
 ---
 title: Captions
-description: The four caption sources for posting runs — inline text, TXT file, JSON file, sidecar — when to pick each, file formats, and pitfalls.
+description: The four caption sources for posting runs, inline text, TXT file, JSON file, sidecar, when to pick each, file formats, and pitfalls.
 ---
 
 # Captions
@@ -18,7 +18,7 @@ The **Set Description** toggle on the template:
 
 Each template has a "Download example" link next to the field that points at a working example file.
 
-## Cheat sheet — which source to pick
+## Cheat sheet: which source to pick
 
 ```
                     ┌─ One-or-two variants for all posts   → Inline text
@@ -31,7 +31,7 @@ unique caption ──→ Sidecar (video: <name>.json,
 per file                     carousel: content.json in subfolder)
 ```
 
-## Option 1. Inline text — multiple captions separated by `;`
+## Option 1. Inline text: multiple captions separated by `;`
 
 ### When to use
 
@@ -54,10 +54,10 @@ First caption #tag1; Second caption with emoji 🎬; Third caption @mention #hot
 
 ### Pitfalls
 
-- A literal `;` in a caption is treated as a separator — move that caption to a `.txt` or sidecar instead.
+- A literal `;` in a caption is treated as a separator, move that caption to a `.txt` or sidecar instead.
 - Empty blocks between `;;` are ignored.
 
-## Option 2. Text file — `.txt`, one caption per line
+## Option 2. Text file: `.txt`, one caption per line
 
 ### When to use
 
@@ -74,28 +74,28 @@ First caption #tag1; Second caption with emoji 🎬; Third caption @mention #hot
 - Line endings: LF or CRLF (normalized).
 - **One line = one caption.**
 - Empty lines are ignored.
-- Hashtags and emoji go **inline** in the caption text — there are no separate fields.
+- Hashtags and emoji go **inline** in the caption text, there are no separate fields.
 
 ### Example
 
 ```
-Put your caption here — replace this line with your own text
+Put your caption here, replace this line with your own text
 Add hashtags inline like this #example #replace_me
-Emojis work too 🎬 — drop them anywhere in the caption
+Emojis work too 🎬, drop them anywhere in the caption
 Each line in this file becomes one TikTok caption
 Empty lines are ignored, max 2200 characters per caption
 ```
 
 ### How variants are picked
 
-Random without repeats — same as inline text.
+Random without repeats, same as inline text.
 
 ### Pitfalls
 
-- Don't use `#` for comments — a line starting with `#` will be posted as a caption with a hashtag.
+- Don't use `#` for comments, a line starting with `#` will be posted as a caption with a hashtag.
 - Only `.txt` is parsed. Renaming a `.md` to `.txt` works; pointing at a `.md` does not.
 
-## Option 3. JSON file — `{title, description}` per post
+## Option 3. JSON file: `{title, description}` per post
 
 ### When to use
 
@@ -108,8 +108,8 @@ Random without repeats — same as inline text.
 - **Source** → **JSON file**.
 - **Title+Description file (.json)** → absolute path.
 - **Selection order**:
-  - **Sequential** — items used in order: first, second, third…
-  - **Random** — random without repeats.
+  - **Sequential**: items used in order: first, second, third…
+  - **Random**: random without repeats.
 
 ### File format
 
@@ -127,7 +127,7 @@ The root is an **array**; each element is an object with two fields:
 | `description` | Yes | Caption text, ≤ 2200 characters. |
 | `title` | Optional | **Ignored for videos** (TikTok has no video title). **Filled in for carousels** if non-empty; empty/missing leaves the carousel's Title field untouched. |
 
-Any other keys (e.g. `_comment`) are ignored by the parser — keep inline comments in your file if you like.
+Any other keys (e.g. `_comment`) are ignored by the parser, keep inline comments in your file if you like.
 
 ### Example
 
@@ -136,11 +136,11 @@ Any other keys (e.g. `_comment`) are ignored by the parser — keep inline comme
   {
     "_comment": "This key is ignored by the parser",
     "title": "Put your title here",
-    "description": "Put your description here — replace this with your TikTok caption #hashtag"
+    "description": "Put your description here. Replace this with your TikTok caption #hashtag"
   },
   {
     "title": "",
-    "description": "Leave title empty if you don't want one — only the description will be set"
+    "description": "Leave title empty if you don't want one. Only the description will be set"
   },
   {
     "title": "Add hashtags inline",
@@ -155,7 +155,7 @@ Any other keys (e.g. `_comment`) are ignored by the parser — keep inline comme
 - Empty array `[]` → no descriptions → fallback fires.
 - Encoding must be **UTF-8**.
 
-## Option 4. Sidecar — a separate `.json` next to each media file
+## Option 4. Sidecar: a separate `.json` next to each media file
 
 ### When to use
 
@@ -167,10 +167,10 @@ Any other keys (e.g. `_comment`) are ignored by the parser — keep inline comme
 
 - **Source** → **Sidecar files**.
 - **If sidecar is missing** → what to do when a file has no sidecar:
-  - **Skip description** (default) — leave the TikTok caption empty.
-  - **Use inline text** — fall back to the global Descriptions field.
-  - **Use global .txt** — fall back to the global `.txt`.
-  - **Use global .json** — fall back to the global `.json`.
+  - **Skip description** (default), leave the TikTok caption empty.
+  - **Use inline text**: fall back to the global Descriptions field.
+  - **Use global .txt**: fall back to the global `.txt`.
+  - **Use global .json**: fall back to the global `.json`.
 
 ### Sidecar file format
 
@@ -179,11 +179,11 @@ Recommended object form:
 ```json
 {
   "title": "Put your title here",
-  "description": "Put your description here — replace this with your TikTok caption #hashtag"
+  "description": "Put your description here. Replace this with your TikTok caption #hashtag"
 }
 ```
 
-An array form is also accepted for backwards compatibility — the first element is used:
+An array form is also accepted for backwards compatibility, the first element is used:
 
 ```json
 [
@@ -203,12 +203,12 @@ videos/
 ├── clip_1.json          ← caption for clip_1.mp4
 ├── clip_2.mov
 ├── clip_2.json          ← caption for clip_2.mov
-└── clip_3.mp4           ← no sidecar — fallback kicks in
+└── clip_3.mp4           ← no sidecar, fallback kicks in
 ```
 
-For videos, `title` is **always ignored** — TikTok doesn't display a title for videos.
+For videos, `title` is **always ignored**: TikTok doesn't display a title for videos.
 
-#### Carousel — subfolder mode (supported)
+#### Carousel: subfolder mode (supported)
 
 The sidecar lives **inside the carousel subfolder**. Filename is picked by priority (case-insensitive):
 
@@ -233,25 +233,25 @@ carousels/
     └── caption.json          ← priority 3
 ```
 
-If a subfolder contains multiple `.json` files and none match the priority list, the first by natural sort wins and a WARNING is logged. Don't introduce ambiguity — name your file using one of the priority names.
+If a subfolder contains multiple `.json` files and none match the priority list, the first by natural sort wins and a WARNING is logged. Don't introduce ambiguity, name your file using one of the priority names.
 
-#### Carousel — flat mode (not supported)
+#### Carousel: flat mode (not supported)
 
-Sidecars in flat carousel mode don't work — there's no unambiguous way to bind photos to a group. If you need per-carousel captions, switch to subfolder mode.
+Sidecars in flat carousel mode don't work, there's no unambiguous way to bind photos to a group. If you need per-carousel captions, switch to subfolder mode.
 
 ### What happens to the sidecar after publishing
 
 - **Video:** `<name>.json` moves to `used/` (or is deleted) **together with the video**, in sync.
 - **Carousel in subfolders:** the entire subfolder moves to `used/` as a unit; the sidecar inside goes along.
 
-## Hashtags, mentions, titles, music — where each lives
+## Hashtags, mentions, titles, music: where each lives
 
 | What | Where | Notes |
 | --- | --- | --- |
 | Hashtags | Inside the description text | No separate field: `"My caption #travel #2026"` |
 | Mentions `@user` | Inside the description text | The runner catches the suggestion popup while typing |
 | Title | JSON / sidecar, `title` field | **Ignored for videos.** Filled in for carousels if non-empty. |
-| Music | Separate **Music** card on the template | Not part of the description — see [Posting runs](/signalroom/how-to/posting-runs#music-card). |
+| Music | Separate **Music** card on the template | Not part of the description, see [Posting runs](/signalroom/how-to/posting-runs#music-card). |
 | Multi-language captions | Inside the text | Any Unicode is supported. |
 
 ## Limits and normalization
@@ -269,7 +269,7 @@ Sidecars in flat carousel mode don't work — there's no unambiguous way to bind
 | Empty caption on TikTok | Sidecar missing, fallback = Skip | Add a sidecar, or switch fallback to inline / .txt / .json |
 | Same text in a loop | Few inline variants, cycle restarts | Add variants via `;` or switch to `.txt` / `.json` |
 | Title didn't appear on a carousel | `title` empty or missing | Add a non-empty `"title"` |
-| Title didn't appear on a video | Expected — videos have no Title field | Move text into `description` |
+| Title didn't appear on a video | Expected, videos have no Title field | Move text into `description` |
 | WARNING "Multiple non-priority sidecars" | Several `.json` in a carousel subfolder, none priority | Rename the right one to `content.json` |
 | Caption truncated | > 2200 characters | Shorten the caption |
 | JSON not parsing | Broken syntax or non-UTF-8 | Validate JSON; check encoding |
@@ -277,5 +277,5 @@ Sidecars in flat carousel mode don't work — there's no unambiguous way to bind
 
 ## Related
 
-- [Posting runs](/signalroom/how-to/posting-runs) — full template setup, including the Description card.
-- [Content folder structure](/signalroom/how-to/content-folders) — where media lives for each mode.
+- [Posting runs](/signalroom/how-to/posting-runs), full template setup, including the Description card.
+- [Content folder structure](/signalroom/how-to/content-folders), where media lives for each mode.

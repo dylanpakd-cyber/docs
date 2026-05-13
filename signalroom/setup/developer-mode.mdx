@@ -1,13 +1,13 @@
 ---
 title: iPhone settings
-description: The iOS settings that have to be configured on each iPhone before automation will run reliably — including the recent Light appearance + StandBy off rules.
+description: The iOS settings that have to be configured on each iPhone before automation will run reliably, including the recent Light appearance + StandBy off rules.
 ---
 
 # iPhone settings
 
 Status: Current iPhone-side checklist. This page covers every iOS toggle that affects whether a lane runs cleanly; pages on the runner install and lane readiness pick up from here.
 
-Run through this **once per iPhone, in order, before installing the on-device runner**. Two of these — Light appearance and StandBy off — are the most common cause of failed sessions in newly-set-up lanes.
+Run through this **once per iPhone, in order, before installing the on-device runner**. Two of these, Light appearance and StandBy off, are the most common cause of failed sessions in newly-set-up lanes.
 
 ## 1. Developer Mode
 
@@ -29,13 +29,13 @@ iOS remembers this trust permanently for the specific Mac. If you replace the Ma
 
 **Settings → Display & Brightness → Auto-Lock → Never.**
 
-If "Never" makes you uncomfortable, the minimum acceptable value is 5 minutes — anything shorter will interrupt longer in-app flows.
+If "Never" makes you uncomfortable, the minimum acceptable value is 5 minutes, anything shorter will interrupt longer in-app flows.
 
-**Why this matters:** auto-lock cuts off whatever the iPhone is doing — including an active upload. The session breaks, the video doesn't publish, and the account is left in an uncertain state.
+**Why this matters:** auto-lock cuts off whatever the iPhone is doing, including an active upload. The session breaks, the video doesn't publish, and the account is left in an uncertain state.
 
 ## 4. Brightness ≥ 50%
 
-**Settings → Display & Brightness** — slider at the middle or higher.
+**Settings → Display & Brightness**: slider at the middle or higher.
 
 **Why this matters:** Warmr recognizes TikTok screen elements visually. Low brightness reduces on-screen contrast and slows recognition, which slows the whole session.
 
@@ -43,9 +43,9 @@ If "Never" makes you uncomfortable, the minimum acceptable value is 5 minutes �
 
 **Settings → Display & Brightness → Appearance → Light.**
 
-Required. On Dark appearance, TikTok's pre-publish screen renders almost entirely in near-black, and the on-device runner cannot reliably locate the on-screen targets it needs to tap — uploads simply do not complete.
+Required. On Dark appearance, TikTok's pre-publish screen renders almost entirely in near-black, and the on-device runner cannot reliably locate the on-screen targets it needs to tap, uploads simply do not complete.
 
-**If you prefer Dark elsewhere on your phone**, set it specifically to **Light** on the iPhones used with Warmr. Do **not** use "Automatic" — it switches at night and breaks scheduled sessions.
+**If you prefer Dark elsewhere on your phone**, set it specifically to **Light** on the iPhones used with Warmr. Do **not** use "Automatic", it switches at night and breaks scheduled sessions.
 
 ## 6. Disable iCloud Photos
 
@@ -61,7 +61,7 @@ Required. StandBy is the iOS 17+ feature that turns a charging iPhone into a des
 
 **Once StandBy is active, iOS blocks programmatic app launches.** Warmr cannot start TikTok, and the session stalls. Symptoms: the session sits idle for several minutes, then the device shows up as `standby` (or simply stops progressing) in the dashboard.
 
-**Alternative (less reliable):** always keep the iPhone *vertical* while charging. StandBy needs the phone lying flat to activate, so a stand that holds it upright works. **Portrait Orientation Lock in Control Center does not help** — StandBy reads the accelerometer directly.
+**Alternative (less reliable):** always keep the iPhone *vertical* while charging. StandBy needs the phone lying flat to activate, so a stand that holds it upright works. **Portrait Orientation Lock in Control Center does not help**: StandBy reads the accelerometer directly.
 
 Toggling StandBy off doesn't affect anything else on the phone.
 
@@ -97,6 +97,6 @@ All boxes ticked? Continue to [Trust and runner setup](/signalroom/setup/trust-r
 
 ## Related
 
-- [iPhone lanes](/signalroom/setup/iphone-lanes) — supported models, USB cables, hubs.
-- [Trust and runner setup](/signalroom/setup/trust-runner) — installing the runner via App Store Connect API.
-- [Safe agent actions](/agents/safe-agent-actions) — agents must not silently change iPhone settings on the operator's behalf.
+- [iPhone lanes](/signalroom/setup/iphone-lanes), supported models, USB cables, hubs.
+- [Trust and runner setup](/signalroom/setup/trust-runner), installing the runner via App Store Connect API.
+- [Safe agent actions](/agents/safe-agent-actions), agents must not silently change iPhone settings on the operator's behalf.
