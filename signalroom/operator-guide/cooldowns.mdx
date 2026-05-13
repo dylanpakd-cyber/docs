@@ -1,36 +1,138 @@
 ---
 title: Cooldowns
-description: Pacing and cooldown review boundaries.
+description: The three pause knobs (between publications, between accounts, between cycles), why each exists, recommended defaults, and what happens when you push them too low.
 ---
 
 # Cooldowns
 
-Status: In progress.
+Status: Current operator reference.
 
-Cooldowns are part of the safety framing: visibility, pacing, logs, receipts, review, and controlled runs. Current docs should avoid pretending that every cooldown policy is fully implemented.
+Cooldowns are the explicit pauses Warmr inserts between units of work. They exist because TikTok's experience is paced — a real user doesn't post three videos in 30 seconds, doesn't switch accounts in two seconds, and doesn't run an account list end-to-end then immediately start over. Cooldowns make Warmr's pacing match.
 
-## Current evidence
+There are **three pause knobs**, plus several implicit waits inside the runner.
 
-Current:
+## The three explicit pauses
 
-- Templates expose pacing-related fields such as video count ranges, watch-time ranges, and rates.
-- Thread summaries expose elapsed time and simple action counters.
-- Logs can be subscribed to and reviewed.
+| Pause | Where it's set | What it gates | Default | Sensible floor |
+| --- | --- | --- | --- | --- |
+| **Pause between publications** | Template (Publishing card) | Multiple publications on the **same account** within one pass | 0 sec | 30–60 sec for posting runs |
+| **Pause between accounts** | Thread config | Switching from one account to the next inside a thread | 0 sec | 10–60 sec (see below) |
+| **Pause between cycles** | Thread config | Cyclic mode: after walking the whole account list, before restarting | 0 min | 30–120 min |
 
-## Operator stance
+Each is conceptually independent. You can run with one of them at zero and the others sensible, depending on what your posting cadence looks like.
 
-Current:
+## Pause between publications
 
-- Treat cooldowns as reviewable pacing context, not an outcome guarantee.
-- Review lane state and recent logs before starting another run.
-- Prefer stopping and inspecting over stacking runs blindly.
+The first one is the simplest. If your template has **Publications per account > 1**, this pause sits between successive publications **on the same account**.
 
-In progress:
+```
+[ acct A: publish 1 ] → [ pause between publications ] → [ acct A: publish 2 ]
+```
 
-- Clear cooldown surfaces in the operator cockpit.
-- Docs that distinguish template pacing from account-level cooldown policy.
+For a single-publication-per-account workflow (the common case), this pause does nothing — the value is irrelevant because there's never a second publication on the same account in the same pass.
 
-Planned:
+**When to push it up:** if you're running 2–3 posts per account per pass and want each to feel like a separate sitting. 30–90 seconds is typical.
 
-- A cooldown review checklist for trial operators.
-- Receipts that make recent lane activity easy to inspect.
+**When 0 is fine:** posting runs with `Publications per account: 1`. Activity workflows.
+
+## Pause between accounts
+
+The second one — `Pause between accounts` on the thread config — is the one most operators tune.
+
+```
+[ acct A: full pass ] → [ pause between accounts ] → [ acct B: full pass ]
+```
+
+This is the gap between "we just finished doing everything we were going to do on account A" and "we open TikTok and switch to account B." 
+
+| Value | When to pick |
+| --- | --- |
+| **5 sec** | Test runs only |
+| **10 sec** | Normal mode, 2–3 accounts per device |
+| **30 sec** | Larger account list, cautious pace |
+| **60 sec** | Maximum manual-switch imitation |
+
+Why this matters: account switching on iOS goes through TikTok's "Switch Account" sheet, which itself has a moment of network activity to fetch session data for the new account. Switching too fast can produce a state where the previous session's last animation is still running when the new account's home screen tries to render — visible to operators as "warmup ran on the wrong account briefly before correcting."
+
+The minimum you can usefully set is `5` (any lower and you'll see those glitches). Most operators settle in the 10–30 second range.
+
+## Pause between cycles
+
+The third pause only matters when **Cyclic** is on. Cyclic mode walks the entire account list, then sleeps, then walks again.
+
+```
+[ accts A → Z: full pass ] → [ pause between cycles ] → [ accts A → Z: full pass ] → ...
+```
+
+`Pause between cycles` is **measured in minutes**, not seconds. Sensible values:
+
+| Value | Use case |
+| --- | --- |
+| **30 min** | Tight loop. Suitable for a small list (3–5 accounts) running aggressive warmup. |
+| **60 min** | Most posting-run loops. |
+| **120 min** | Larger lists or paid-content-heavy work where you want explicit gaps. |
+| **240+ min** | Closer to a "twice a day" cadence. |
+
+Pushing below 30 minutes is usually a mistake — it produces a fleet where every account is touched 30+ times a day, which looks unlike a real user for any of the accounts.
+
+## Implicit pauses (built in)
+
+A handful of pauses live inside the runner and aren't operator-tunable as cooldowns:
+
+- **Wait after publish** (Template → Publishing card): the gap between tapping Post and the runner moving on. Critical because TikTok continues uploading in the background after Post is tapped — moving the runner along too early leaves the post stuck in "Posting…". Default 360 sec. Push to 480–600 for big videos or slow proxies. This is technically a per-publication wait, not a cooldown — but operators sometimes lump it in.
+- **Search results wait time** (Music card): how long the runner waits after issuing a music search before tapping a result. Default 3 sec.
+- **Activity workflow per-video time**: not a "cooldown" but a randomized range (default 2–10 sec for Feed, 5–16 sec for Search) that paces watching.
+- **Lane reconnect backoff**: when a lane drops mid-thread, Warmr's recovery layer waits before reconnecting. Not exposed as a knob.
+
+## What happens when you push cooldowns too low
+
+| Cooldown | Pushed too low | Symptom |
+| --- | --- | --- |
+| Pause between publications | < 30 sec | Multiple back-to-back posts from the same account in a short window; some get stuck in "Posting…" |
+| Pause between accounts | < 5 sec | Account-switch glitches: warmup briefly runs on the wrong account before correcting; logs show short transition errors |
+| Pause between cycles | < 30 min | Each account gets touched 30+ times a day, far outside typical user behavior |
+| Wait after publish (template, not a cooldown but worth listing) | < 240 sec | Publications stuck in "Posting…", caption sometimes missing |
+
+These are not bans waiting to happen — they're operational glitches. SignalRoom doesn't promise platform-side outcome guarantees; what cooldowns buy you is **operational reliability** plus a pacing pattern that doesn't immediately read as automated.
+
+## What cooldowns don't do
+
+- They don't guarantee account health. Content strategy, posting cadence, and account history matter far more.
+- They don't protect against TikTok policy violations. That's content.
+- They don't make a single iPhone behave like five. Even with sensible cooldowns, the per-iPhone account-switching ceiling is what TikTok's per-device limits allow (currently up to 8 accounts per device).
+- They aren't a substitute for proxies. If you need different egress IPs for different accounts, that's a proxy setup, not a cooldown one.
+
+## Recommended starter cooldowns
+
+For a **first activity workflow** ([your first 30 minutes](/signalroom/quickstart)):
+
+```text
+Pause between publications:  0 sec    (irrelevant for warmup)
+Pause between accounts:     10 sec
+Pause between cycles:        — (Cyclic off)
+```
+
+For a **single-device posting run** on 3–5 accounts:
+
+```text
+Pause between publications:  0 sec    (Publications per account = 1)
+Wait after publish:        360 sec    (template setting)
+Pause between accounts:     60 sec
+Pause between cycles:        — (Cyclic off)
+```
+
+For a **multi-device looping stream** (10 lanes, 50 accounts, run continuously):
+
+```text
+Pause between publications:  0 sec
+Wait after publish:        420 sec
+Pause between accounts:     30 sec
+Pause between cycles:       60 min    (Cyclic on)
+```
+
+## Related
+
+- [Posting runs (how-to)](/signalroom/how-to/posting-runs) — where `Wait after publish` and `Pause between publications` are configured.
+- [Activity workflows](/signalroom/how-to/activity-workflows) — the per-video and per-watch pacing inside warmup.
+- [Approvals](/signalroom/operator-guide/approvals) — cooldowns interact with the automation-enabled toggle; runs gate on both.
+- [Logs and receipts](/signalroom/operator-guide/logs-and-receipts) — how to see pacing in the receipts after a run.

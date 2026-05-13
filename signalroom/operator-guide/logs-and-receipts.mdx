@@ -1,41 +1,180 @@
 ---
 title: Logs and receipts
-description: How Warmr exposes reviewable run evidence.
+description: The two evidence surfaces — streaming logs for real-time visibility and evidence bundles for post-run audit. What's in them, where they live, and how to use them.
 ---
 
 # Logs and receipts
 
-Status: Current for log subscription and minimal evidence export. In progress for richer operator receipts.
+Status: Current reference for log subscription and minimal evidence export. Richer post-run receipt structure is In progress.
 
-Logs are central to the SignalRoom safety frame. Operators should be able to see what happened, when, on which configuration and account.
+Two evidence surfaces, two use cases:
 
-## Current log surface
+- **Logs** — server-pushed `log.line` notifications you subscribe to for real-time visibility into a running thread.
+- **Receipts (evidence bundles)** — immutable artifacts you export at the end of a run, used for post-run review or to attach to a support ticket.
 
-Current:
+Both are operational. Neither makes claims about TikTok-side outcomes; both record what Warmr's runner observed and did.
 
-- `logs.subscribe` supports optional `configurationId` and `accountUsername` filters.
-- `warmrctl logs` subscribes and then unsubscribes unless `--follow` is used.
-- `warmrctl logs --follow` streams notifications.
-- Log notification fields include timestamp, configuration name, account username, severity, and message.
+## Logs — real-time visibility
 
-Useful commands:
+### How the stream works
 
-```bash
-warmrctl logs --configuration-id <CONFIGURATION_UUID>
-warmrctl logs --configuration-id <CONFIGURATION_UUID> --follow
-warmrctl --json logs --account-username <USERNAME>
+The control plane uses JSON-RPC notifications:
+
+- Subscribe: `logs.subscribe` (optionally with `configurationId` and/or `accountUsername` filters).
+- Each log line is delivered as a `log.line` notification.
+- Unsubscribe: `logs.unsubscribe`, or close the connection.
+
+The `warmrctl logs` command wraps this:
+
+| Command | What it does |
+| --- | --- |
+| `warmrctl logs` | Subscribes, prints the subscription confirmation, then unsubscribes. Useful to confirm the channel works. |
+| `warmrctl logs --follow` | Stays subscribed and streams notifications until Ctrl-C. |
+| `warmrctl logs --follow --configuration-id <ID>` | Streams notifications **only** for one configuration. Server-side filter — cheap. |
+| `warmrctl logs --follow --account-username <USER>` | Streams only lines tagged with one TikTok username. |
+| `warmrctl --json logs --follow` | Streams as JSON-RPC frames (one per line) for agent parsing. |
+
+You can combine `--configuration-id` and `--account-username` to narrow further.
+
+### `log.line` payload
+
+```json
+{
+  "method": "log.line",
+  "params": {
+    "subscriptionId": "sub-019e2211-...",
+    "timestamp": "2026-05-13T15:42:32Z",
+    "configurationName": "Lane 2 morning",
+    "accountUsername": "@example",
+    "severity": "INFO",
+    "message": "thread complete: 5/5 accounts processed"
+  }
+}
 ```
 
-## Current evidence export
+| Field | Notes |
+| --- | --- |
+| `subscriptionId` | Echoes the subscription, so multiplexed agents can route lines. |
+| `timestamp` | ISO 8601 in UTC. |
+| `configurationName` | Human name from the thread configuration. |
+| `accountUsername` | The TikTok account this line was emitted under, when applicable. |
+| `severity` | `INFO`, `WARNING`, or `ERROR`. |
+| `message` | Free-form text — readable, not stable schema. |
 
-Current:
+Full reference: [Log events](/reference/log-events).
 
-- `warmrctl evidence export` calls the control-plane evidence export method.
-- The current bundle is minimal and should be treated as logs plus job snapshots unless the repo proves richer evidence.
+### What appears in a log stream
 
-## Planned receipts
+Typical run, narrated by the log stream:
+
+```
+INFO  thread starting (configurationId=9f3a-..., accounts=5, devices=1)
+INFO  device lane attached (udid=...)
+INFO  account switch begin (target=@user1)
+INFO  account switch complete
+INFO  workflow started (mode=warmup, type=feed)
+INFO  feed video watched (durationSec=8.3, liked=false)
+INFO  feed video watched (durationSec=5.1, liked=true)
+INFO  feed video watched (durationSec=11.7, liked=false)
+INFO  account complete (videosWatched=8, likesGiven=2)
+INFO  pause between accounts (durationSec=10)
+INFO  account switch begin (target=@user2)
+...
+INFO  thread complete: 5/5 accounts processed
+```
+
+An erroring run interleaves WARNING / ERROR lines with surrounding context — that's how you tell whether an error is fatal (followed by the thread stopping) or transient (followed by a retry).
+
+### Practical patterns
+
+**Watch one run, narrate it to terminal:**
+
+```bash
+warmrctl logs --follow --configuration-id <CONFIGURATION_UUID>
+```
+
+**Watch one account across whatever runs touch it:**
+
+```bash
+warmrctl logs --follow --account-username "@example"
+```
+
+**Grab the last 60 seconds of logs after a failure (no time-range filter natively — you re-subscribe and wait):**
+
+```bash
+warmrctl --json logs --follow --configuration-id <CONFIGURATION_UUID> \
+  | jq -c 'select(.params.severity == "WARNING" or .params.severity == "ERROR")'
+```
+
+**Multiplex multiple runs to one terminal:**
+
+```bash
+# No filter — get everything. Only sane on small hosts.
+warmrctl --json logs --follow | jq -c '.params | {time: .timestamp, cfg: .configurationName, sev: .severity, msg: .message}'
+```
+
+## Receipts — post-run audit
+
+### Exporting a receipt
+
+```bash
+warmrctl evidence export
+warmrctl --json evidence export
+```
+
+The command writes an **evidence bundle** to disk. The response includes the bundle's path. The bundle is a snapshot of:
+
+- Job summaries (one entry per thread that ran).
+- The associated logs.
+- App state at the moment of export.
+
+Each export creates a separate bundle — older exports aren't superseded. Treat it like committing a git tag: once exported, the bundle is immutable from the agent's perspective.
+
+### What's in a bundle today
+
+Current (minimal):
+
+- Thread summary fields: `id`, `configurationId`, `configurationName`, `accountUsername`, `deviceUDID`, `deviceName`, `status`, `startedAt`, `finishedAt`, `elapsedSeconds`, `videosWatched`, `likesGiven`, `favoritesGiven`, `errorMessage`.
+- Log lines tied to the thread.
+- App build info at time of export.
+
+### What's planned
+
+In progress:
+
+- Link logs to run receipts (so a single bundle includes the full action history and not just summaries).
+- Receipt entries for approval gates (which actions were approved, when, by whom, with what parameters).
+- Failure-class tagging on the error lines that triggered a run stop.
+- Lane + account state snapshots at run boundaries.
 
 Planned:
 
-- Operator-facing receipts for run start, stop, lane state, and follow-up inspection.
-- Failure bundles that make support and debugging faster.
+- Receipts that include a stop reason (operator-requested, error class, recovery exhausted, etc.).
+- A receipt index per host so you can navigate "every run from Monday afternoon" without grepping files.
+
+### Where bundles live on disk
+
+The export response prints the path. Currently bundles live under Warmr's application support directory. Don't expect a stable on-disk path between versions — read it from the response.
+
+If you need to ship a bundle to support, the response path is what you `tar` and attach.
+
+## Treating evidence honestly
+
+Logs and receipts record what Warmr's runner observed and did. They are **not**:
+
+- Proof of TikTok-side success. A clean evidence export does **not** prove a video reached the For You feed, an account stayed in good standing, or a publication is visible to followers. It proves the in-app publish flow finished without an error from Warmr's perspective.
+- A bypass for platform policy. If a thread fails because TikTok showed a captcha or rate-limited the account, the receipt records that — it doesn't work around it.
+- Marketing material. Per [Claims and safety](/signalroom/safety), don't paste evidence stats into copy that implies platform-outcome guarantees.
+
+What they **are**:
+
+- The "what did it do?" answer for any run.
+- The forensic trail when an account changes state and you want to know whether Warmr was involved.
+- Support material that lets the SignalRoom team reproduce or explain a problem.
+
+## Related
+
+- [Log events (reference)](/reference/log-events) — `log.line` schema.
+- [Agent docs → logs / evidence](/signalroom/agent-docs#warmrctl-evidence-export) — capture patterns for agents.
+- [Failure recovery](/signalroom/operator-guide/failure-recovery) — using logs to classify an error before reacting.
+- [Approvals](/signalroom/operator-guide/approvals) — what makes a receipt's underlying actions auditable.

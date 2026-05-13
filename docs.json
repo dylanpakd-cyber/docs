@@ -12,7 +12,6 @@
         "root": "index",
         "pages": [
           "signalroom/index",
-          "quickstart",
           "signalroom/quickstart",
           "signalroom/safety",
           "signalroom/agent-docs"

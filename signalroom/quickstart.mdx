@@ -1,77 +1,265 @@
 ---
-title: Quickstart
-description: Conservative setup path for Warmr and SignalRoom operators.
+title: Your first 30 minutes
+description: Zero to first activity workflow. Step-by-step, from downloading the DMG to watching your first account warm up on a real iPhone.
 ---
 
-# Quickstart
+# Your first 30 minutes
 
-Status: Current plus in-progress operator path. Do not treat this as a public trial-ready install guide yet.
+Status: Current operator walkthrough. This is the path most new operators take on day one — install Warmr on a Mac, get one iPhone connected, install the runner, run a warmup on one TikTok account.
 
-This quickstart is for repo operators and agents who need a safe first path through Warmr. It is intentionally conservative and avoids claiming unverified product behavior.
+This page is a single linear walkthrough. Each step is one thing. Don't skip — most setup failures are skipped steps surfacing as obscure errors later.
 
-## Relationship
+## What you'll have at the end
 
-Current:
+- Warmr.app installed on your Mac and showing one connected iPhone.
+- The on-device runner (RodmanRunner) installed on that iPhone, with the developer profile trusted.
+- One TikTok account added to an account list, already logged into TikTok on the iPhone.
+- One template configured for activity workflow (warmup) mode.
+- One thread that combines the iPhone, the account list, and the template — running.
 
-- SignalRoom is the public-facing name and landing layer.
-- Warmr is the app, repo, and control-plane implementation.
-- The Warmr repo is the source of truth for code, local docs, runbooks, and agent rules.
+## Before you start (5 minutes)
 
-## Prerequisites
+You need:
 
-Current:
+- A Mac on Apple Silicon (M1 or later), macOS 14 (Sonoma) or newer.
+- An iPhone 12 or newer running iOS 17 or later, with at least 5 GB free.
+- An original Apple or MFi-certified USB cable.
+- An Apple Developer account — paid ($99/year) **or** free Apple ID. Paid is recommended; the runner cert lasts a year instead of 7 days. You can do this whole walkthrough on a free Apple ID and upgrade later.
+- One TikTok account already logged into the TikTok app on the iPhone you're going to use.
 
-- A Mac host that can run Warmr.app.
-- Customer-owned physical iPhones connected to that Mac.
-- Device trust and Developer Mode completed before automation work.
-- One active owner of each iPhone lane at a time.
-- Repo work performed in a fresh worktree from `origin/main`, not a dirty canonical checkout.
+If you don't have those in front of you, stop and get them. The rest of this page assumes everything above is true.
 
-In progress:
+## Stage 1 — Install Warmr on your Mac (2 min)
 
-- A clean trial-onboarding checklist for teams outside the repo owner environment.
-- Operator docs for approvals, cooldown review, and failure recovery.
+1. Download the latest Warmr DMG (the link comes from the SignalRoom team during onboarding — Warmr is not on a public download page yet).
+2. Double-click the DMG to open it.
+3. Drag **Warmr.app** into your **Applications** folder.
+4. Launch Warmr from Launchpad or Applications.
+5. macOS will warn about an unidentified developer the first time you open it: **System Settings → Privacy & Security** → scroll to the warning → click **Open Anyway**.
 
-## Start with read-only inspection
+The Warmr window opens with a sidebar: **Devices**, **Accounts**, **Templates**, **Threads**, **Logs**, **License**.
 
-Current:
+If macOS won't let you open the app at all, see [Mac host setup → One-time setup](/signalroom/setup/mac-host).
 
-1. Open the Warmr worktree.
-2. Read `STATUS.md`, then `CLAUDE.md`, `AGENTS.md`, and `CONTEXT.md`.
-3. Confirm worktree freshness before doing issue-scoped work.
-4. Use read-only control-plane commands first:
+## Stage 2 — Connect your first iPhone (3 min)
+
+1. Plug the iPhone into the Mac with the USB cable.
+2. On the iPhone, tap **Trust This Computer?** → **Trust** → enter your passcode.
+3. Make sure the iPhone is **unlocked** (the home screen visible, not the lock screen).
+4. In Warmr, open the **Devices** page from the sidebar.
+5. Your iPhone should appear in the device list with its UDID, model name, and a green "connected" indicator.
+
+If the iPhone doesn't show up:
+
+- Reseat the cable.
+- Confirm the trust prompt on the iPhone again (sometimes it appears more than once).
+- Try a different USB port — front-of-Mac ports are usually more reliable than dock-station ports.
+- If you're on Windows, you're not — see [Mac host setup](/signalroom/setup/mac-host); SignalRoom requires macOS on Apple Silicon.
+
+## Stage 3 — Configure required iPhone settings (5 min)
+
+Run through every one of these on the iPhone before touching the runner. Two of them — Light appearance and StandBy off — are the most common reason a session looks like it's hanging.
+
+| # | Setting | Where | Value |
+| --- | --- | --- | --- |
+| 1 | Developer Mode | Settings → Privacy & Security → Developer Mode | **On** (reboot, confirm again) |
+| 2 | Auto-Lock | Settings → Display & Brightness → Auto-Lock | **Never** |
+| 3 | Brightness | Settings → Display & Brightness | Slider ≥ 50% |
+| 4 | **Appearance** | Settings → Display & Brightness → Appearance | **Light** (not Dark, not Automatic) |
+| 5 | iCloud Photos | Settings → Photos → iCloud Photos | **Off** |
+| 6 | **StandBy** | Settings → StandBy | **Off** |
+| 7 | Reduce Motion (optional) | Settings → Accessibility → Motion | On |
+
+Why these matter is in [iPhone settings](/signalroom/setup/developer-mode). Skipping #4 or #6 will silently break your first session.
+
+## Stage 4 — Install the runner on the iPhone (5–10 min)
+
+This installs the on-device test runner (called **RodmanRunner**) that Warmr uses to drive TikTok. The runner is signed with **your** Apple Developer account — not a SignalRoom-controlled cert.
+
+You have two paths. Pick one.
+
+### Path A (recommended) — App Store Connect API
+
+Use this if you have a **paid** Apple Developer account ($99/year) and **App Manager** role or higher. Five minutes from start to install. Cert lasts a year.
+
+1. Go to <https://appstoreconnect.apple.com/access/integrations/api>.
+2. Switch to the **Team Keys** tab (not Individual Keys).
+3. Click **Generate API Key** → role = **App Manager**.
+4. Apple shows the **Issuer ID** and **Key ID**, and lets you download the **.p8** file. **Save the .p8 now** — you only get one download.
+5. In Warmr, open **Devices**, expand the **App Store Connect API** section.
+6. Paste **Key ID**, **Issuer ID**, and drop the **.p8** file into the upload area.
+7. Click **Test connection & save**. Warmr auto-detects the Team ID.
+8. The **Install** button next to your iPhone activates. Click it. Wait 30–60 seconds.
+
+Full details + troubleshooting: [Trust and runner setup → Path A](/signalroom/setup/trust-runner#path-a--app-store-connect-api).
+
+### Path B — Xcode (free Apple ID)
+
+Use this if you're using a free Apple ID. Takes a few more clicks. Cert lasts 7 days — you'll re-install once a week.
+
+1. In Warmr, open **Devices** and **scroll all the way down** to the manual signing section.
+2. Click **Sign via Xcode Manually** → **Download Xcode Project**.
+3. Extract the ZIP. You'll get a folder containing **RodmanRunner.xcodeproj**.
+4. Double-click **RodmanRunner.xcodeproj** to open it in Xcode.
+5. In Xcode, **Settings → Accounts** (`⌘,`) → click `+` → **Apple ID** → sign in with your free or paid Apple ID.
+6. In Xcode's project navigator (left sidebar), click the top-level **RodmanRunner** project to open the target settings.
+7. Select the **RodmanRunner** target → **Signing & Capabilities** tab → check **Automatically manage signing** → pick your **Team** from the dropdown.
+8. Repeat step 7 for the **RodmanRunnerUITests** target (it's in the target list under RodmanRunner).
+9. With the iPhone connected over USB, click the **device selector** at the top of the Xcode window → pick your iPhone.
+10. **Product → Build For → Testing** (`⌘⇧U`). Xcode compiles, signs, and installs the runner. The build takes 30–90 seconds the first time.
+
+When the build finishes, Xcode shows "Build Succeeded" and the RodmanRunner app icon appears on the iPhone home screen.
+
+If you hit "Failed Registering Bundle Identifier", that's because free Apple IDs can't register the default bundle ID. The Xcode project Warmr generates has a unique bundle ID that works around this — make sure you downloaded the project from Warmr's Devices page (not from anywhere else).
+
+## Stage 5 — Trust the developer profile on the iPhone (1 min)
+
+Apple won't let an iPhone launch an app signed by an unknown developer until you say it's OK. Do this once per iPhone, regardless of which install path you used.
+
+1. On the iPhone: **Settings → General → VPN & Device Management**.
+2. Find the entry under **Developer App** with your Apple ID or Team ID.
+3. Tap it → **Trust "<your name>"** → confirm.
+
+Now the runner will launch automatically whenever Warmr needs it. You don't need to open it manually on the iPhone.
+
+Quick check from your Mac terminal:
 
 ```bash
-warmrctl status
-warmrctl devices list
-warmrctl templates list
-warmrctl thread list
+warmrctl --json devices list | jq '.[] | {udid, displayName, rodmanInstalledVersion, isConnected}'
 ```
 
-Use `--json` when an agent needs stable output:
+Each iPhone should show `isConnected: true` and a non-null `rodmanInstalledVersion`. If `rodmanInstalledVersion` is `null`, the runner isn't installed yet — go back to Stage 4.
+
+## Stage 6 — Add your TikTok account (1 min)
+
+1. In Warmr's sidebar, click **Accounts**.
+2. Click **Add List**.
+3. Give the list a name (e.g. "My First List").
+4. In the accounts field, type your TikTok username — one per line. For this first run, one username is fine:
+
+   ```text
+   yourusername
+   ```
+
+5. Click **Save**.
+
+> **Important:** the account has to already be logged into the TikTok app on the iPhone. Warmr's activity workflows don't log accounts in — they assume you've already done that step manually (or you're running an onboarding/seeding workflow, which is a separate mode covered elsewhere).
+
+## Stage 7 — (Optional) Per-account proxy via Shadowrocket or Stash
+
+Skip this stage for your first run unless you specifically need to assign a proxy to your account. Adds 5 minutes if you do.
+
+If you want each TikTok account to route through its own IP, install a proxy client on the iPhone:
+
+- **Shadowrocket** ($2.99, App Store) — simpler, widely used.
+- **Stash** ($3.99, App Store) — more features, integrates more cleanly with Warmr's per-account rotation.
+
+Both work. For this walkthrough, install Shadowrocket on the iPhone and add a proxy server (SOCKS5 or HTTP) you have credentials for. Tap **Connect** in Shadowrocket. Once the proxy is active, traffic from TikTok routes through it.
+
+On the Warmr side, you'll select **Proxy = Manual** (or **Stash** if using Stash with its API) on the thread configuration in the next stage.
+
+A deep guide on Stash + per-account rotation is **Planned** in `signalroom/how-to/per-account-proxy` and not part of this walkthrough — for now, manual Shadowrocket is the simplest path.
+
+## Stage 8 — Create your first template — warmup mode (3 min)
+
+A template defines **what** the run does. For your first run, do an **activity workflow** (warmup) — no publishing yet. You'll watch the iPhone scroll the feed and occasionally like a video.
+
+1. In Warmr's sidebar, click **Templates**.
+2. Click **New Template**.
+3. Name it "First warmup".
+4. **Run Mode** → select **Warmup**.
+5. **Type** → select **Feed** (the simpler of the two — Search needs keywords).
+6. **Feed parameters:**
+   - Videos in feed (min / max): **5 – 10**
+   - Time per video (min / max sec): **4 – 12**
+7. **Feed rates:**
+   - Like: **8%**
+   - Follow: **1%**
+   - Favorite: **1%**
+8. **Pause between accounts:** 10 seconds (doesn't matter much for a one-account run, but set it).
+9. **Debug → Save screenshots:** keep this **On** — it'll save screenshots to disk at each step, which is gold for support if something goes wrong.
+10. Click **Save**.
+
+What this configures: when the thread runs, the iPhone will open TikTok, watch 5–10 videos in the For You feed, spend 4–12 seconds on each, and like ~1 in 12 of them. No follows, no saves, no posting.
+
+Full parameter reference + recommended presets: [Activity workflows](/signalroom/how-to/activity-workflows).
+
+## Stage 9 — Create the thread (2 min)
+
+A thread combines **a template** + **one or more devices** + **an account list** into one runnable unit.
+
+1. In Warmr's sidebar, click **Threads**.
+2. Click **Add Configuration**.
+3. Fill in:
+
+   | Field | Value |
+   | --- | --- |
+   | **Name** | "First warmup run" |
+   | **Devices** | Check the box next to your iPhone |
+   | **Upload template** | "First warmup" (the template you just made) |
+   | **Account list** | "My First List" |
+   | **Proxy** | **None** (or **Manual** if you set up Shadowrocket in Stage 7) |
+   | **Cyclic** | Off |
+   | **Pause between accounts** | 10 sec |
+
+4. Click **Save**. A new thread configuration row appears.
+
+## Stage 10 — Launch the thread (1 min + watch)
+
+1. On the thread configuration row, click **Start**.
+2. Warmr connects to the iPhone, launches the runner if it isn't running, opens TikTok, switches to (or stays on) your account, and starts the activity workflow.
+
+On the iPhone: you'll see TikTok open, the For You feed scroll, the occasional heart icon flash on a liked video, and brief pauses on each clip. **Don't touch the iPhone.** Just watch.
+
+On the Mac: open the **Monitoring** view (or the **Logs** sidebar item) to see status updates — current account, current action, videos watched, likes given.
+
+You can also stream logs from the terminal:
 
 ```bash
-warmrctl --json status
-warmrctl --json devices list
+warmrctl --json logs --follow
 ```
 
-## Move to controlled actions only after review
+A 5–10 video warmup pass takes about 60–120 seconds.
 
-Current:
+## What success looks like
 
-- The control plane has action methods for thread start/stop, evidence export, and app lifecycle.
-- Some action methods require automation to be explicitly enabled.
-- Agents should prefer visibility and review before action.
+- The iPhone showed TikTok scrolling smoothly. No app crashes, no stuck screens.
+- The thread row in Warmr shows status **finished** with `videosWatched ≈ 5–10`, `likesGiven ≈ 0–2`.
+- The Logs view shows a sequence of INFO lines ending with something like "thread complete: 1/1 accounts processed".
+- No red ERROR lines.
 
-Use action commands only when the operator has approved the run and the lane state is understood:
+If you got there: **congratulations**, your lane is real. From here:
 
-```bash
-warmrctl thread start --configuration-id <CONFIGURATION_UUID>
-warmrctl thread stop --configuration-id <CONFIGURATION_UUID>
-warmrctl logs --configuration-id <CONFIGURATION_UUID> --follow
-```
+- Add 2–4 more TikTok accounts to the same list and re-run to confirm multi-account works.
+- Once warmup looks reliable across 5–10 runs, set up a posting run: [Posting runs](/signalroom/how-to/posting-runs).
 
-Planned:
+## What usually goes wrong — and how to fix it
 
-- A public trial quickstart with screenshots and final setup checks.
-- A tighter operator checklist for phone lane readiness.
+| Symptom | Most likely cause | Fix |
+| --- | --- | --- |
+| iPhone doesn't show up in **Devices** | Cable / port / trust prompt not confirmed | Replug, confirm Trust on the iPhone, try a different USB port |
+| `rodmanInstalledVersion` is `null` after Stage 4 | Runner build/install didn't finish | Re-run **Build For Testing** in Xcode, or click Install again in Warmr |
+| iPhone says **"Untrusted Developer"** when the runner tries to launch | Didn't trust the developer profile | Stage 5 again |
+| Thread starts but the iPhone sits idle for minutes, then errors | **StandBy** is on (most common new-operator failure) | Stage 3, item 6 — turn StandBy off |
+| Thread starts but the iPhone screen renders weirdly and the runner stalls | **Appearance is Dark or Automatic** | Stage 3, item 4 — set Appearance to Light, restart the thread |
+| Thread errors with "TikTok not installed" | TikTok app missing on the iPhone | Install TikTok from the App Store and open it once; sign into the account; restart the thread |
+| Thread errors with "automation disabled" | Warmr's automation toggle is off | In Warmr's app menu / Settings, enable automation |
+| Thread starts but immediately stops with "No keywords for warmup search" | You picked **Search** mode without filling keywords | Stage 8 — switch to **Feed** mode, or fill in keywords for Search |
+| iPhone disconnects mid-run | USB cable | Swap to an Apple-original or MFi cable |
+| Logs are empty or the Monitoring view is blank | Logs subscription not active / wrong filter | Run `warmrctl --json logs --follow` from a terminal to confirm logs are flowing |
+
+For anything not covered here, [Failure recovery](/signalroom/operator-guide/failure-recovery) walks the recovery decision tree.
+
+## Next stops
+
+Now that one lane works:
+
+1. [Posting runs](/signalroom/how-to/posting-runs) — your first actual video upload.
+2. [Content folder structure](/signalroom/how-to/content-folders) — where videos and captions live on disk.
+3. [Captions](/signalroom/how-to/captions) — four ways to set descriptions.
+4. [Device lanes](/signalroom/operator-guide/device-lanes) — scaling past one iPhone.
+5. [Logs and receipts](/signalroom/operator-guide/logs-and-receipts) — auditing every run.
+6. [Failure recovery](/signalroom/operator-guide/failure-recovery) — when sessions need operator attention.
+7. [Agent docs](/signalroom/agent-docs) — driving Warmr from `warmrctl` for AI agents and scripts.
+
+If you only do one more thing today: run one posting run on the same account, with one short video, to close the loop from "warmup runs" → "video published."
