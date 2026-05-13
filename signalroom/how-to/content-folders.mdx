@@ -1,6 +1,6 @@
 ---
 title: Content folder structure
-description: Where to put videos, photos, and captions so posting runs and activity workflows find them — and what happens to files after publication.
+description: Where to put videos, photos, and captions so posting runs and activity workflows find them, and what happens to files after publication.
 ---
 
 # Content folder structure
@@ -29,14 +29,14 @@ The **Content Type** inside a posting run or onboarding run is picked separately
 
 Any other extensions are silently ignored by the scanner.
 
-## Posting run — video
+## Posting run: video
 
 ### Template fields
 
-- **Video folder** — absolute path to the folder.
-- **Order** — `Sequential` (natural sort by filename) or `Random` (shuffled).
-- **Move used files** — into a `used/` subfolder (**on by default**).
-- **Delete after publishing** — takes priority over Move.
+- **Video folder**: absolute path to the folder.
+- **Order**: `Sequential` (natural sort by filename) or `Random` (shuffled).
+- **Move used files**: into a `used/` subfolder (**on by default**).
+- **Delete after publishing**: takes priority over Move.
 
 ### Folder layout
 
@@ -57,14 +57,14 @@ videos/
 - **Delete** is on → the file is permanently deleted; `used/` is never created.
 - A sidecar `.json` (caption) is moved or deleted **together with the video**.
 
-## Posting run — carousel (subfolder mode, recommended)
+## Posting run: carousel (subfolder mode, recommended)
 
-Pick this when you have "packaged" content — each carousel laid out into its own folder with a defined photo order.
+Pick this when you have "packaged" content, each carousel laid out into its own folder with a defined photo order.
 
 ### Template fields
 
-- **Photo folder** — absolute path.
-- **Each subfolder = one carousel** — **on**.
+- **Photo folder**: absolute path.
+- **Each subfolder = one carousel**: **on**.
 
 ### Folder layout
 
@@ -90,7 +90,7 @@ carousels/
 ### Rules
 
 - The subfolder name `used` (any case) is **reserved** and never scanned. Don't name your carousels that.
-- Photos inside a subfolder are sorted naturally: `1, 2, 10` — not `1, 10, 2`.
+- Photos inside a subfolder are sorted naturally: `1, 2, 10`, not `1, 10, 2`.
 - Subfolders themselves are published in natural-sort order of names.
 - TikTok accepts **1 to 35 photos** per carousel.
 
@@ -98,15 +98,15 @@ carousels/
 
 The entire subfolder moves into `used/` as a unit (or is deleted). Sidecar caption files travel with it.
 
-## Posting run — carousel (flat mode)
+## Posting run: carousel (flat mode)
 
-Pick this when you don't want to group photos into subfolders — all images sit "loose" in one folder, and you want them sliced into equal-sized carousels.
+Pick this when you don't want to group photos into subfolders, all images sit "loose" in one folder, and you want them sliced into equal-sized carousels.
 
 ### Template fields
 
 - **Photo folder**.
-- **Each subfolder = one carousel** — **off**.
-- **Photos per carousel** — 1 to 35.
+- **Each subfolder = one carousel**: **off**.
+- **Photos per carousel**: 1 to 35.
 
 ### Folder layout
 
@@ -130,13 +130,13 @@ photos/
 ### Rules
 
 - Photos are sorted naturally by name and chunked into blocks of the configured size.
-- **Sidecar captions don't work in flat mode** — there's no unambiguous photo-to-group binding. For per-carousel captions, switch to subfolder mode or use a global caption source (see [Captions](/signalroom/how-to/captions)).
+- **Sidecar captions don't work in flat mode**: there's no unambiguous photo-to-group binding. For per-carousel captions, switch to subfolder mode or use a global caption source (see [Captions](/signalroom/how-to/captions)).
 
-## Activity workflow — no media folders
+## Activity workflow: no media folders
 
 Activity workflows do not upload anything. The template's video/photo folder fields are **ignored** when Run Mode = Warmup. See [Activity workflows](/signalroom/how-to/activity-workflows) for parameter setup.
 
-## Onboarding run — same as posting run
+## Onboarding run: same as posting run
 
 The content folder layout for an onboarding run (Run Mode = Seeding) is identical to a posting run. The onboarding run also reads an **accounts file**, where each line is one account in one of three formats (auto-detected):
 
@@ -153,7 +153,7 @@ channel@outlook.com|OutlookPass|bestchannel|SecretPass!|1.ARw...refresh_token
 
 > Heads up: if any TikTok password contains a `:` character, use the **pipe format only**. Colon parsing will break on the password field.
 
-Unlike a posting run, onboarding **intentionally** publishes the same content to multiple fresh accounts — that's the point. Publish history is tracked **per account**.
+Unlike a posting run, onboarding **intentionally** publishes the same content to multiple fresh accounts, that's the point. Publish history is tracked **per account**.
 
 ## Multi-device protection: `.publish_history.json`
 
@@ -164,20 +164,20 @@ videos/.publish_history.json
 carousels/.publish_history.json
 ```
 
-This file is the cross-device claim ledger. When several iPhones run posting runs against the same folder, it guarantees one source file goes to TikTok at most once per account. Claim TTL is 30 minutes — long enough to cover a normal upload, short enough that a crashed lane releases its claim quickly.
+This file is the cross-device claim ledger. When several iPhones run posting runs against the same folder, it guarantees one source file goes to TikTok at most once per account. Claim TTL is 30 minutes, long enough to cover a normal upload, short enough that a crashed lane releases its claim quickly.
 
 **Don't delete `.publish_history.json` manually.** If you wipe it, already-published files can be re-uploaded by lanes that don't know they were already used. The file is safe to commit to version control if you want history; it is not safe to edit.
 
 ## "Folder ready" checklists
 
-### For a posting run — video
+### For a posting run: video
 
 - All videos in one folder, extensions from the supported list.
 - Filenames sorted as you want them (natural sort is used).
 - No `used/` subfolder yet, or it's empty.
 - If you need per-file captions, each video has a `<name>.json` sidecar next to it.
 
-### For a posting run — carousel, subfolder mode
+### For a posting run: carousel, subfolder mode
 
 - Each carousel is a separate subfolder.
 - Photos inside are numbered/named so natural sort gives the order you want.
@@ -185,11 +185,11 @@ This file is the cross-device claim ledger. When several iPhones run posting run
 - Template has **Each subfolder = one carousel** = on.
 - Optional: `content.json` (or `description.json` / `caption.json`) inside each subfolder for per-carousel captions.
 
-### For a posting run — carousel, flat mode
+### For a posting run: carousel, flat mode
 
 - All photos in one folder, sorted by filename.
-- Total photo count is a multiple of **Photos per carousel** — otherwise the tail won't form a full carousel.
-- Captions come from a **global source** (Text / TXT / JSON) — sidecars are not used in flat mode.
+- Total photo count is a multiple of **Photos per carousel**: otherwise the tail won't form a full carousel.
+- Captions come from a **global source** (Text / TXT / JSON), sidecars are not used in flat mode.
 
 ### For an onboarding run
 
@@ -199,6 +199,6 @@ This file is the cross-device claim ledger. When several iPhones run posting run
 
 ## Related
 
-- [Posting runs](/signalroom/how-to/posting-runs) — running a posting run end to end.
-- [Captions](/signalroom/how-to/captions) — the four caption sources and when to use each.
-- [Activity workflows](/signalroom/how-to/activity-workflows) — warmup mode with no media folders.
+- [Posting runs](/signalroom/how-to/posting-runs), running a posting run end to end.
+- [Captions](/signalroom/how-to/captions), the four caption sources and when to use each.
+- [Activity workflows](/signalroom/how-to/activity-workflows), warmup mode with no media folders.

@@ -1,6 +1,6 @@
 ---
 title: Posting runs
-description: End-to-end guide for posting runs — template setup, every card (Content / Music / Description / Publishing / Gallery / Debug), thread-config knobs, presets, and common errors.
+description: End-to-end guide for posting runs, template setup, every card (Content / Music / Description / Publishing / Gallery / Debug), thread-config knobs, presets, and common errors.
 ---
 
 # Posting runs
@@ -15,16 +15,16 @@ Make sure on each iPhone:
 
 - Unlocked.
 - Brightness ≥ 50%.
-- Charging in **portrait** orientation (not flat — StandBy will eat the session — see [iPhone settings](/signalroom/setup/developer-mode)).
+- Charging in **portrait** orientation (not flat, StandBy will eat the session, see [iPhone settings](/signalroom/setup/developer-mode)).
 - TikTok installed, account already logged in. (Posting runs do not log in; that's an onboarding run's job.)
 
 ## When to use a posting run
 
 - Accounts already logged in, TikTok already installed on the device.
 - You want to publish on a schedule or on a cycle.
-- Content is ready locally — videos or photos for carousels.
+- Content is ready locally, videos or photos for carousels.
 
-If TikTok has to be installed first, the account logged in, the proxy switched — that's an **onboarding run**, not a posting run.
+If TikTok has to be installed first, the account logged in, the proxy switched, that's an **onboarding run**, not a posting run.
 
 ## Content types
 
@@ -108,7 +108,7 @@ Short summary:
 | **JSON file** | Need titles (for carousels) or a strict sequential order |
 | **Sidecar** | Each media file has its own unique caption |
 
-> For **videos** the title is **ignored** — TikTok has no Title field on videos. For **carousels** the title is filled in if non-empty.
+> For **videos** the title is **ignored**: TikTok has no Title field on videos. For **carousels** the title is filled in if non-empty.
 >
 > **Limit: 2200 characters.** Hashtags and mentions go directly inside the description text: `"My caption #travel @user"`.
 
@@ -118,7 +118,7 @@ Short summary:
 | --- | --- | --- |
 | **Publications per account** | How many publications per account per pass. `0` = no limit, until content runs out | 1 |
 | **Pause between publications** | Seconds between back-to-back publications on the same account | 0 |
-| **Wait after publish** | Seconds after returning to the home screen — TikTok is still uploading in the background | 360 |
+| **Wait after publish** | Seconds after returning to the home screen. TikTok is still uploading in the background | 360 |
 
 > **Wait after publish is critical.** The video continues uploading in the background after Post is tapped. If you switch off TikTok or move to the next account too quickly, the publication gets stuck in "Posting…" and never reaches the feed.
 >
@@ -133,9 +133,9 @@ iPhone stores TikTok-uploaded media in its photo gallery. Options:
 | **Clear before upload** | Delete all photos/videos from the device gallery before uploading new content | off |
 | **Delete after upload** | Delete the just-published media from the gallery | off |
 
-> For **carousels we recommend turning Clear before upload on** — otherwise old photos blend with new ones during gallery selection, and TikTok assembles the wrong carousel.
+> For **carousels we recommend turning Clear before upload on**: otherwise old photos blend with new ones during gallery selection, and TikTok assembles the wrong carousel.
 >
-> During cleanup iOS shows a system dialog "Allow … to delete N photos?" — Warmr accepts it automatically.
+> During cleanup iOS shows a system dialog "Allow … to delete N photos?". Warmr accepts it automatically.
 
 ### "Debug" card
 
@@ -143,7 +143,7 @@ iPhone stores TikTok-uploaded media in its photo gallery. Options:
 | --- | --- |
 | **Save screenshots** | Save a screenshot at each automation step into `debug_screenshots/` for error analysis and support bundles |
 
-On by default — critical for support. Disk is auto-managed: cleaned at > 7 days old or > 1 GB total (oldest first).
+On by default, critical for support. Disk is auto-managed: cleaned at > 7 days old or > 1 GB total (oldest first).
 
 ## What's set on the thread, not the template
 
@@ -154,7 +154,7 @@ Some parameters live on the **Threads → New configuration** tab, not on the te
 | **Account List** | Which accounts to publish on |
 | **Devices** | One or more iPhone lanes |
 | **Proxy** | None / Manual / Stash / Happ / System |
-| **Cyclic** | Looped run — after going through all accounts, start over |
+| **Cyclic** | Looped run, after going through all accounts, start over |
 | **Pause between accounts** | Seconds between accounts |
 | **Pause between cycles** | Minutes between cycles |
 | **Reupload Cycles** | How many times to re-publish the same content across new cycles |
@@ -169,7 +169,7 @@ You can also start/stop posting runs from `warmrctl`:
 warmrctl --json templates list
 warmrctl --json thread list
 
-# Start a configuration. (Operator-approved — see Agent docs.)
+# Start a configuration. (Operator-approved, see Agent docs.)
 warmrctl --json thread start --configuration-id <CONFIGURATION_UUID>
 
 # Tail logs filtered to this run.
@@ -186,7 +186,7 @@ See the [Agent docs](/signalroom/agent-docs) for the full agent-safe workflow, i
 
 ## Multi-device safety
 
-You can **safely run 5–25 devices off the same content folder** — Warmr coordinates them through the hidden `.publish_history.json` file next to the media, and each file goes to TikTok at most once. Don't delete that file manually.
+You can **safely run 5–25 devices off the same content folder**: Warmr coordinates them through the hidden `.publish_history.json` file next to the media, and each file goes to TikTok at most once. Don't delete that file manually.
 
 See [Content folder structure → Multi-device protection](/signalroom/how-to/content-folders#multi-device-protection-publish_historyjson).
 
@@ -194,20 +194,20 @@ See [Content folder structure → Multi-device protection](/signalroom/how-to/co
 
 | Symptom | Cause | What to do |
 | --- | --- | --- |
-| "TikTok not installed" | No TikTok on the device | Install TikTok via App Store, restart. Posting runs don't install — that's an onboarding run |
-| "No content" at start | Folder empty or all files already published | Add files, or — only as a last resort — delete `.publish_history.json` (will re-publish) |
+| "TikTok not installed" | No TikTok on the device | Install TikTok via App Store, restart. Posting runs don't install, that's an onboarding run |
+| "No content" at start | Folder empty or all files already published | Add files, or, only as a last resort, delete `.publish_history.json` (will re-publish) |
 | "Outdated client app" | On-device runner is older than required | Reinstall the runner from Warmr's Devices page |
 | Publication stuck in "Posting…" | Wait after publish too small | Push to 360–600 sec for large files / slow proxies |
 | Carousel uses the wrong photos | Old photos in the device gallery | Turn on **Clear before upload** in the Gallery card |
 | Music not picked up on a business account | TikTok Business blocks licensed music | Use commercial tracks, or turn off **Add music**. Business accounts are auto-detected |
 | Caption truncated | > 2200 characters | Trim it; see [Captions](/signalroom/how-to/captions) |
 | One file goes to multiple devices | Wiped or corrupt `.publish_history.json` | Don't delete it manually; let Warmr rebuild it. Confirm the folder is the same across devices |
-| Thread fails on "Edit Profile did not load" | Multi-device + slow proxy + missing settle | A short settle pause is already built in — check device-recovery logs |
+| Thread fails on "Edit Profile did not load" | Multi-device + slow proxy + missing settle | A short settle pause is already built in, check device-recovery logs |
 | "Proxy error" | Proxy not assigned / unreachable / dropped | Check the proxy server (Stash API / Happ / System VPN profile) |
 
 ## Recommended presets
 
-### "Safe stream — 1 device, 3 accounts"
+### "Safe stream: 1 device, 3 accounts"
 
 ```
 Content: Video, Move to used = on
@@ -266,8 +266,8 @@ Pause between cycles: 30 minutes
 
 ## Related
 
-- [Content folder structure](/signalroom/how-to/content-folders) — folder layouts for video and carousel.
-- [Captions](/signalroom/how-to/captions) — caption sources in detail.
-- [Activity workflows](/signalroom/how-to/activity-workflows) — warmup runs before publishing.
-- [Agent docs](/signalroom/agent-docs) — driving posting runs from `warmrctl`.
-- [Run state model](/reference/run-state-model) — thread fields, status lifecycle.
+- [Content folder structure](/signalroom/how-to/content-folders), folder layouts for video and carousel.
+- [Captions](/signalroom/how-to/captions), caption sources in detail.
+- [Activity workflows](/signalroom/how-to/activity-workflows), warmup runs before publishing.
+- [Agent docs](/signalroom/agent-docs), driving posting runs from `warmrctl`.
+- [Run state model](/reference/run-state-model), thread fields, status lifecycle.

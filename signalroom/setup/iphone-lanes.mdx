@@ -1,13 +1,13 @@
 ---
 title: iPhone lanes
-description: Physical iPhone requirements — supported models, cables, hubs, storage, network — before you connect them to the Mac host.
+description: Physical iPhone requirements, supported models, cables, hubs, storage, network, before you connect them to the Mac host.
 ---
 
 # iPhone lanes
 
 Status: Current setup reference for customer-owned physical iPhones.
 
-An iPhone lane is one physical device connected to the Mac host. SignalRoom is **always** customer-owned hardware — there is no rented or hosted lane option. Get the hardware right once and you'll save yourself most of the "session randomly disconnected" support cases.
+An iPhone lane is one physical device connected to the Mac host. SignalRoom is **always** customer-owned hardware, there is no rented or hosted lane option. Get the hardware right once and you'll save yourself most of the "session randomly disconnected" support cases.
 
 ## 1. Supported iPhone models
 
@@ -15,7 +15,7 @@ An iPhone lane is one physical device connected to the Mac host. SignalRoom is *
 | --- | --- | --- |
 | Recommended | iPhone 13 / 14 / 15 / 16 (any variant) | iOS 17.x – 18.x |
 | Minimum | iPhone 12 / 12 mini / 12 Pro / 12 Pro Max | iOS 17.0+ |
-| Limited support | iPhone 11 / 11 Pro / 11 Pro Max | iOS 17.0+ — works, but on-screen rendering is slower; activity workflows take longer |
+| Limited support | iPhone 11 / 11 Pro / 11 Pro Max | iOS 17.0+, works, but on-screen rendering is slower; activity workflows take longer |
 | Not supported | iPhone X / XS / XR / SE 1st gen / 8 / 7 and older | iOS 16 and below |
 
 ### Storage
@@ -23,13 +23,13 @@ An iPhone lane is one physical device connected to the Mac host. SignalRoom is *
 - **Minimum:** 5 GB free.
 - **Recommended:** 15+ GB free, to leave room for TikTok, iOS updates, and prepared media.
 
-A near-full iPhone produces upload errors that look like network problems but aren't — always check free space before debugging anything else.
+A near-full iPhone produces upload errors that look like network problems but aren't, always check free space before debugging anything else.
 
 ## 2. USB cable
 
 - Use the **original Apple cable** or an **MFi-certified** Lightning or USB-C cable.
 - Generic uncertified cables are the single most common cause of mid-session disconnects.
-- Wi-Fi is **not** a substitute. The cable is required at all times — automation runs over USB.
+- Wi-Fi is **not** a substitute. The cable is required at all times, automation runs over USB.
 
 If a lane drops mid-session and the iPhone has plenty of battery, swap the cable before swapping anything else.
 
@@ -42,12 +42,12 @@ If a lane drops mid-session and the iPhone has plenty of battery, swap the cable
 | 6+ | **Powered** required | Without a powered hub, devices randomly drop off the bus under load. |
 | 12+ | Multiple powered hubs | Split across hubs, 6–8 devices per hub. |
 
-Each iPhone needs a USB 2.0 (or better) port that can sustain 500 mA. A "powered" hub is one with its own AC adapter — bus-powered hubs do not count.
+Each iPhone needs a USB 2.0 (or better) port that can sustain 500 mA. A "powered" hub is one with its own AC adapter, bus-powered hubs do not count.
 
 ## 4. Network
 
 - Stable internet on the **Mac host**. 100 Mbps is plenty for any fleet size; latency matters more than peak bandwidth.
-- The iPhones themselves do not need Wi-Fi — they communicate through the Mac over USB.
+- The iPhones themselves do not need Wi-Fi, they communicate through the Mac over USB.
 - If you assign per-account proxies, those run on the iPhone via Stash. See the per-account proxy guide (planned) for setup.
 
 ## 5. Lane model
@@ -57,7 +57,7 @@ Warmr discovers iPhones through go-ios and represents each as a **lane** with th
 | Field | Meaning |
 | --- | --- |
 | `udid` | Stable iPhone identifier. Use this in scripts, never `displayName`. |
-| `displayName` | Human-readable name ("Lane 2 — Kody"). |
+| `displayName` | Human-readable name ("Lane 2. Kody"). |
 | `modelName` | iPhone model. |
 | `iosVersion` | iOS version string. |
 | `isConnected` | Whether the device is currently visible over USB. |
@@ -84,14 +84,14 @@ The new device should appear with `isConnected: true`. If it doesn't:
 | --- | --- |
 | Device not listed at all | Reconnect the cable. Confirm the "Trust This Computer?" prompt on the iPhone. |
 | Listed with `isConnected: false` | Unlock the iPhone, re-confirm trust, replug. |
-| Listed but `rodmanInstalledVersion` is missing | Runner isn't installed yet — see [Trust and runner setup](/signalroom/setup/trust-runner). |
+| Listed but `rodmanInstalledVersion` is missing | Runner isn't installed yet, see [Trust and runner setup](/signalroom/setup/trust-runner). |
 | Disconnects randomly under load | Swap the cable, then move to a powered hub. |
 
 ## Related setup pages
 
-- [Mac host setup](/signalroom/setup/mac-host) — host machine prep that comes before this.
-- [Developer Mode](/signalroom/setup/developer-mode) — iPhone settings required before installing the runner.
-- [Trust and runner setup](/signalroom/setup/trust-runner) — installing + trusting the on-device test runner.
+- [Mac host setup](/signalroom/setup/mac-host), host machine prep that comes before this.
+- [Developer Mode](/signalroom/setup/developer-mode), iPhone settings required before installing the runner.
+- [Trust and runner setup](/signalroom/setup/trust-runner), installing + trusting the on-device test runner.
 
 ## Planned
 

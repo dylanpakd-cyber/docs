@@ -1,13 +1,13 @@
 ---
 title: "Operator guide"
-description: "The SignalRoom operating concepts — device lanes, posting runs, cooldowns, approvals, logs and receipts, failure recovery — fit together.                         "
+description: "The SignalRoom operating concepts, device lanes, posting runs, cooldowns, approvals, logs and receipts, failure recovery, fit together.                         "
 ---
 
 # Operator guide
 
 Status: Current overview. Each subsection links to a deeper page; this index is the map.
 
-SignalRoom's operating model has six concepts. They sit on top of the Warmr control plane, but you can operate the product without reading the control-plane reference — every concept has a UI surface in Warmr.app and a `warmrctl` surface for scripts and agents.
+SignalRoom's operating model has six concepts. They sit on top of the Warmr control plane, but you can operate the product without reading the control-plane reference, every concept has a UI surface in Warmr.app and a `warmrctl` surface for scripts and agents.
 
 ## The six concepts
 
@@ -49,19 +49,19 @@ A posting run is the operator-facing label for the publish workflow. Under the h
 
 ### [Cooldowns](/signalroom/operator-guide/cooldowns)
 
-Three pause knobs control pacing: between publications on the same account, between accounts, between cycles. Cooldowns aren't just throttling — they're what makes "five publications across a list" look like a person working rather than a script crashing through the list. Sensible defaults are documented; pushing them too low produces the failure modes most operators run into first.
+Three pause knobs control pacing: between publications on the same account, between accounts, between cycles. Cooldowns aren't just throttling, they're what makes "five publications across a list" look like a person working rather than a script crashing through the list. Sensible defaults are documented; pushing them too low produces the failure modes most operators run into first.
 
 ### [Approvals](/signalroom/operator-guide/approvals)
 
-Action commands (`thread start`, `thread stop`, `evidence export`, app lifecycle) require explicit operator intent. The control plane has an **automation enabled** toggle that gates action methods entirely — when it's off, `thread start` returns a domain error instead of doing anything. Agents are expected to treat this as a hard wall and not try to work around it.
+Action commands (`thread start`, `thread stop`, `evidence export`, app lifecycle) require explicit operator intent. The control plane has an **automation enabled** toggle that gates action methods entirely, when it's off, `thread start` returns a domain error instead of doing anything. Agents are expected to treat this as a hard wall and not try to work around it.
 
 ### [Logs and receipts](/signalroom/operator-guide/logs-and-receipts)
 
-Two surfaces. **Logs** are server-pushed `log.line` notifications you can subscribe to for real-time visibility (`warmrctl logs --follow`). **Receipts** are evidence bundles you export at the end of a run (`warmrctl evidence export`) — they're the "what happened" artifact for review or support tickets.
+Two surfaces. **Logs** are server-pushed `log.line` notifications you can subscribe to for real-time visibility (`warmrctl logs --follow`). **Receipts** are evidence bundles you export at the end of a run (`warmrctl evidence export`), they're the "what happened" artifact for review or support tickets.
 
 ### [Failure recovery](/signalroom/operator-guide/failure-recovery)
 
-When a run errors, recovery is layered: per-step retry inside the runner, runner restart on the iPhone, lane reconnect from the Mac, and (last resort) `app restart`. The page walks the decision tree — when to wait, when to intervene, when an error class means the operator (not the app) has to do something.
+When a run errors, recovery is layered: per-step retry inside the runner, runner restart on the iPhone, lane reconnect from the Mac, and (last resort) `app restart`. The page walks the decision tree, when to wait, when to intervene, when an error class means the operator (not the app) has to do something.
 
 ## What's NOT in this section
 
@@ -76,10 +76,10 @@ This section is the **concept layer**. Use it when you want to understand _what_
 
 After your [first 30 minutes](/signalroom/quickstart), this is the model that gets refined:
 
-- **Lanes** are physical and finite — adding a lane means adding hardware.
+- **Lanes** are physical and finite, adding a lane means adding hardware.
 - **Templates** are the recipes you write once and reuse across runs.
 - **Account lists** are the targets a template gets applied to.
-- **Threads** are runs in flight — they hold a template, accounts, lanes, and runtime state.
+- **Threads** are runs in flight, they hold a template, accounts, lanes, and runtime state.
 - **Receipts** are the immutable record of what a thread did.
 - **Cooldowns \+ approvals** are the rate-limiters and the operator's seat in the loop.
 - **Failure recovery** is the rulebook for what the app handles automatically vs. what wants human attention.

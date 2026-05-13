@@ -7,13 +7,13 @@ description: What the Warmr host Mac is responsible for, sizing it for your iPho
 
 Status: Current setup reference. The repo source of truth for helper binaries and socket paths remains the Warmr repo.
 
-The Mac host runs Warmr.app, owns the control socket, drives connected iPhones over USB, and hosts the bundled go-ios + port-forwarding helpers. SignalRoom is software you run on **your own** Mac — there is no hosted SignalRoom fleet you connect to.
+The Mac host runs Warmr.app, owns the control socket, drives connected iPhones over USB, and hosts the bundled go-ios + port-forwarding helpers. SignalRoom is software you run on **your own** Mac, there is no hosted SignalRoom fleet you connect to.
 
 ## 1. Host machine requirements
 
 ### Mac (recommended)
 
-Apple Silicon is required — Intel Macs are not supported. On-screen content recognition runs on the Neural Engine on Apple Silicon, which is the entire reason this stack runs comfortably with many iPhones on one host.
+Apple Silicon is required. Intel Macs are not supported. On-screen content recognition runs on the Neural Engine on Apple Silicon, which is the entire reason this stack runs comfortably with many iPhones on one host.
 
 - **CPU:** Apple Silicon (M1 / M2 / M3 / M4 family). Pro / Max variants help for larger fleets.
 - **macOS:** 14 (Sonoma) or later.
@@ -29,9 +29,9 @@ Use this as a starting point. Capacity assumes TikTok's native multi-account lim
 | 3 | 24 | M1 / M2 / M4 | 16 GB | SATA SSD |
 | 5 | 40 | M2 / M4 (Pro preferred) | 24 GB | NVMe SSD |
 | 10 | 80 | M2 Pro / M4 Pro | 32 GB | NVMe SSD |
-| > 10 | — | Contact us before sizing | — | — |
+| > 10 |. | Contact us before sizing |. |. |
 
-For deployments above 10 devices, write to support before buying hardware — at that scale, network, hub topology, and USB port count matter more than raw CPU.
+For deployments above 10 devices, write to support before buying hardware, at that scale, network, hub topology, and USB port count matter more than raw CPU.
 
 ## 2. Mac responsibilities
 
@@ -40,7 +40,7 @@ Current:
 - Run **Warmr.app**.
 - Own the control socket at `~/Library/Application Support/Warmr/control/control.sock`.
 - Discover and drive connected iPhones via the bundled go-ios helpers.
-- Keep **one owner per device lane** — running two Warmr instances against the same iPhone produces wedged lanes.
+- Keep **one owner per device lane**: running two Warmr instances against the same iPhone produces wedged lanes.
 - Surface state to `warmrctl` for operator + agent inspection.
 
 Agents may override the socket path with `WARMR_CONTROL_SOCKET` or `--socket-path` when the operator explicitly provides one.

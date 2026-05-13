@@ -1,13 +1,13 @@
 ---
 title: Activity workflows
-description: How to configure and run activity workflows (warmup) — Feed or Search type, interaction rates, recommended presets, common errors.
+description: How to configure and run activity workflows (warmup). Feed or Search type, interaction rates, recommended presets, common errors.
 ---
 
 # Activity workflows
 
 Status: Current operator how-to. Run Mode = Warmup in templates. See [Posting runs](/signalroom/how-to/posting-runs) for the publishing mode.
 
-An activity workflow is a mode where the account doesn't publish anything — it spends time in TikTok the way a regular user would: scrolls the feed, watches for randomized durations, occasionally likes / follows / saves, and searches for videos by keywords.
+An activity workflow is a mode where the account doesn't publish anything, it spends time in TikTok the way a regular user would: scrolls the feed, watches for randomized durations, occasionally likes / follows / saves, and searches for videos by keywords.
 
 **It does not upload or publish anything.** Activity workflows exist to build up engagement on an account before its first publication and to nudge TikTok's algorithm toward a niche.
 
@@ -18,15 +18,15 @@ An activity workflow is a mode where the account doesn't publish anything — it
 | Freshly logged-in account before its first post | **Yes**, 1–2 cycles |
 | Account after a long pause (a week+) | **Yes**, 1 cycle |
 | Account that's been actively publishing recently | Optional |
-| You want to teach the feed your niche | Yes — keyword (Search) workflow |
+| You want to teach the feed your niche | Yes, keyword (Search) workflow |
 
 An activity workflow can run as a **standalone thread** before the posting run, or be chained inside an onboarding run (after login) via the `seeding_warm_*` settings.
 
 ## Two workflow types
 
-The template has a **Feed** / **Search** toggle. One thread run uses **one of the two** — the choice is locked into the template.
+The template has a **Feed** / **Search** toggle. One thread run uses **one of the two**: the choice is locked into the template.
 
-### Feed — the For You feed
+### Feed: the For You feed
 
 The runner opens TikTok and scrolls the feed:
 
@@ -37,7 +37,7 @@ The runner opens TikTok and scrolls the feed:
 5. Swipes up to the next video.
 6. Repeats N times.
 
-### Search — keyword-driven
+### Search: keyword-driven
 
 The runner opens TikTok and runs a search:
 
@@ -72,11 +72,11 @@ Pick one. Parameters of the other type are saved in the template but not used.
 
 | Parameter | What it controls | Default | Limits |
 | --- | --- | --- | --- |
-| **Keywords** | One keyword per line | empty | — |
+| **Keywords** | One keyword per line | empty |. |
 | **Videos in results** (min / max) | How many videos to watch in results | 3 – 8 | 0 – 100 |
 | **Time per video** (min / max, sec) | Seconds per video | 5 – 16 | 3 – 20 |
 
-> **Keyword format:** one keyword per line. **One keyword is picked at random per thread run** — so write similar / niche keywords rather than 50 random topics.
+> **Keyword format:** one keyword per line. **One keyword is picked at random per thread run**: so write similar / niche keywords rather than 50 random topics.
 >
 > ```
 > easy pasta recipe
@@ -110,7 +110,7 @@ Pause between accounts when working a multi-account list:
 
 ### "Debug" card
 
-- **Save screenshots** — screenshots at each step for diagnostics. On by default. Turn off only when activity workflows are running cleanly and you don't need the support trail.
+- **Save screenshots**: screenshots at each step for diagnostics. On by default. Turn off only when activity workflows are running cleanly and you don't need the support trail.
 
 ## Fields not used in activity workflows
 
@@ -133,12 +133,12 @@ Beyond the template, the **Threads → New configuration** tab takes:
 | **Devices** | One or more lanes |
 | **Upload template** | The template with Run Mode = Warmup |
 | **Account List** | List of accounts (login must already be done) |
-| **Proxy** | Optional — Stash / Happ / System / Manual |
+| **Proxy** | Optional. Stash / Happ / System / Manual |
 | **Cyclic** | Endless cycle through accounts |
 | **Pause between accounts / cycles** | Your call |
 | **Schedule** | Optional |
 
-> **Accounts must already be logged into TikTok on the device** (or in Keychain). Activity workflows do **not log in** on their own — for cold-start login use an onboarding run.
+> **Accounts must already be logged into TikTok on the device** (or in Keychain). Activity workflows do **not log in** on their own, for cold-start login use an onboarding run.
 
 ## What happens during a session
 
@@ -166,10 +166,10 @@ If **Cyclic** is on, after walking through every account the thread sleeps for "
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | Thread crashes immediately: "No keywords for warmup search" | Search mode with no keywords | Fill in Keywords or switch to Feed |
-| Same keyword reused | By design — one keyword is picked per run | Restart the thread to rotate, or enable Cyclic |
+| Same keyword reused | By design, one keyword is picked per run | Restart the thread to rotate, or enable Cyclic |
 | No likes at all | Like chance is 0%, or the current item is a livestream (sidebar hidden) | Set Like ≥ 5–10%; check the feed has regular videos |
 | Videos fly by too quickly | Min time per video too small | Push min to 3–5 seconds |
-| Thread freezes for 30+ seconds between videos | Hit a livestream — the runner waits, then swipes onward | Standard behavior; nothing to do |
+| Thread freezes for 30+ seconds between videos | Hit a livestream, the runner waits, then swipes onward | Standard behavior; nothing to do |
 | Account reach drops after a series of activity workflows | Too aggressive settings (Like / Follow > 30%) | Lower interaction chances |
 
 ## Recommended presets
@@ -202,7 +202,7 @@ Like: 15%
 Follow: 3%
 ```
 
-The algorithm picks up the implied niche — the next time the account opens For You, the feed is on-topic.
+The algorithm picks up the implied niche, the next time the account opens For You, the feed is on-topic.
 
 ### "Active user"
 
@@ -221,7 +221,7 @@ Mimics someone who watches a lot and likes noticeably.
 
 - Template created with Run Mode = **Warmup**.
 - Type picked: **Feed** or **Search**.
-- If Search — Keywords filled in (one per line).
+- If Search. Keywords filled in (one per line).
 - Video count and watch time within a realistic range (not 100 videos at 30 seconds each).
 - Interaction chances ≤ 25% (Like) and ≤ 5% (Follow / Favorite).
 - Pause between accounts ≥ 10 sec for multi-account lists.
@@ -230,6 +230,6 @@ Mimics someone who watches a lot and likes noticeably.
 
 ## Related
 
-- [Posting runs](/signalroom/how-to/posting-runs) — the publishing mode often launched right after an activity workflow.
-- [Content folder structure](/signalroom/how-to/content-folders) — activity workflows don't need media folders, but useful for contrast.
-- [Agent docs](/signalroom/agent-docs) — driving activity workflows from `warmrctl`.
+- [Posting runs](/signalroom/how-to/posting-runs), the publishing mode often launched right after an activity workflow.
+- [Content folder structure](/signalroom/how-to/content-folders), activity workflows don't need media folders, but useful for contrast.
+- [Agent docs](/signalroom/agent-docs), driving activity workflows from `warmrctl`.
